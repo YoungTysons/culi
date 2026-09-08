@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Velvet &amp; Brew - Artisanal Coffee &amp; Tea</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <style>
+    @layer base {
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        overscroll-behavior: none;
+      }
+
+      main>:first-child {
+        margin-top: 0 !important;
+      }
+
+      main>:last-child {
+        margin-bottom: 0 !important;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script
+    id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-primary-container": "#ae8d87", "inverse-on-surface": "#f4f0e9", "on-tertiary": "#ffffff", "surface": "#fdf9f2", "error-container": "#ffdad6", "secondary": "#1b6d24", "tertiary-fixed-dim": "#ffb77d", "primary-fixed": "#ffdad4", "on-secondary-fixed-variant": "#005312", "surface-tint": "#745853", "primary-container": "#3e2723", "inverse-surface": "#31302c", "on-surface-variant": "#504442", "on-primary": "#ffffff", "on-error-container": "#93000a", "error": "#ba1a1a", "background": "#fdf9f2", "primary": "#271310", "on-secondary-fixed": "#002204", "on-secondary": "#ffffff", "surface-bright": "#fdf9f2", "tertiary-container": "#482300", "surface-container": "#f1ede6", "on-background": "#1c1c18", "on-primary-fixed-variant": "#5b403c", "outline-variant": "#d3c3c0", "surface-container-highest": "#e6e2db", "tertiary": "#2a1200", "secondary-fixed-dim": "#88d982", "on-secondary-container": "#217128", "inverse-primary": "#e3beb8", "on-primary-fixed": "#2b1613", "surface-variant": "#e6e2db", "secondary-fixed": "#a3f69c", "primary-fixed-dim": "#e3beb8", "surface-container-high": "#ebe8e1", "on-error": "#ffffff", "on-surface": "#1c1c18", "surface-container-lowest": "#ffffff", "surface-container-low": "#f7f3ec", "on-tertiary-container": "#de7b0d", "tertiary-fixed": "#ffdcc3", "on-tertiary-fixed-variant": "#6e3900", "surface-dim": "#dddad3", "on-tertiary-fixed": "#2f1500", "secondary-container": "#a0f399", "outline": "#827472" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.75rem", "space-xs": "0.5rem", "space-2xl": "3rem", "space-3xl": "4rem", "space-md": "1rem", "margin-desktop": "3rem", "gutter-mobile": "1rem", "gutter-desktop": "1.5rem", "space-xl": "2rem", "margin-mobile": "1rem", "space-lg": "1.5rem", "space-2xs": "0.25rem", "margin-tablet": "2rem" }, "fontFamily": { "display-lg-mobile": ["Playfair Display"], "title-lg": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Playfair Display"], "label-lg": ["Plus Jakarta Sans"], "headline-sm": ["Playfair Display"], "headline-lg": ["Playfair Display"], "display-lg": ["Playfair Display"], "headline-md": ["Playfair Display"], "body-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "title-md": ["Plus Jakarta Sans"] }, "fontSize": { "display-lg-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "title-lg": ["18px", { "lineHeight": "26px", "fontWeight": "600" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }], "headline-lg-mobile": ["26px", { "lineHeight": "32px", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }], "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }], "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }], "title-md": ["16px", { "lineHeight": "24px", "fontWeight": "600" }] } } } };</script>
+</head>
+
+<body class="bg-surface font-body-md text-body-md text-on-surface">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-surface/85 backdrop-blur-md shadow-[0_1px_8px_rgba(62,39,35,0.06)]">
+    <div
+      class="h-20 w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-tablet lg:px-margin-desktop flex items-center justify-between gap-space-md">
+      <div class="flex items-center gap-space-sm shrink-0"><img alt="Velvet &amp; Brew Brand Logo"
+          class="h-8 w-auto object-contain"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRMxOCJJIwhg2mAHon8lvGMa1yym3orqDiRdlg40dBTFx0TvEYfZ71neLTQ8uprX8147qfyIYLJzVxXFz0-7ICt2RDwvn4jZ2tle3rHiJDQ2CKmX2n687yOluhuMxETFM7MOXoF--pdXecPCdu558V282Cl4oqc_UILl-QtvYPqxNgKmGVit_2jgH1wviVhHrNLduF8f-hBJVF13RvckcnmMoRE6pnVYhqI2aR7tzp6m2ScQKt6sznsQ" />
+        <div class="flex flex-col"><span
+            class="font-headline-sm text-headline-sm text-primary leading-tight tracking-tight">Velvet &amp;
+            Brew</span><span
+            class="font-label-sm text-label-sm text-on-surface-variant tracking-wider uppercase">Artisanal Coffee &amp;
+            Tea</span></div>
+      </div>
+      <nav class="hidden xl:flex items-center gap-space-xs"
+        data-active-classes="bg-primary-container text-on-primary font-label-lg rounded-full px-space-md py-space-xs shadow-[0_4px_12px_-2px_rgba(62,39,35,0.12)]">
+        <a class="px-space-md py-space-xs rounded-full font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all"
+          data-path="trang-chu" href="#">Trang chủ</a><a
+          class="px-space-md py-space-xs rounded-full font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all"
+          data-path="thuc-don" href="#">Thực đơn</a><a
+          class="px-space-md py-space-xs rounded-full font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all"
+          data-path="ca-phe" href="#">Cà phê</a><a
+          class="px-space-md py-space-xs rounded-full font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all"
+          data-path="tra-sua" href="#">Trà sữa</a><a
+          class="px-space-md py-space-xs rounded-full font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all"
+          data-path="khuyen-mai" href="#">Khuyến mãi</a><a
+          class="px-space-md py-space-xs rounded-full font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all"
+          data-path="gioi-thieu" href="#">Giới thiệu</a><a
+          class="px-space-md py-space-xs rounded-full font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all"
+          data-path="lien-he" href="#">Liên hệ</a></nav>
+      <div class="flex items-center gap-space-xs md:gap-space-sm shrink-0"><button aria-label="Tìm kiếm"
+          class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+          type="button"><span class="material-symbols-outlined text-[20px]">search</span></button><button
+          aria-label="Thông báo"
+          class="relative w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+          type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span
+            class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span></button><button aria-label="Giỏ hàng"
+          class="relative flex items-center gap-space-2xs bg-surface-container-low hover:bg-surface-container-high px-space-sm py-space-xs rounded-full transition-all text-on-surface"
+          type="button"><span
+            class="material-symbols-outlined text-[20px] text-primary-container">local_mall</span><span
+            class="font-label-sm text-label-sm bg-primary-container text-on-primary px-space-2xs py-[1px] rounded-full">3</span></button>
+        <div class="flex items-center pl-space-xs"><img alt="Profile"
+            class="w-8 h-8 rounded-full object-cover shadow-[0_2px_6px_rgba(62,39,35,0.15)]"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIuIQH4ntxcCHLQm_B4eLlcpsyZoY-ztnLLrUoHQvuvhcWVL697v9e1qYuXL24xfWixBCb4BcNpdyDf9rtZtY-m81_NLB_tSkCN2O1IlWOV_1ZFsHncKjfwk6Rjx50j_WXLwVKonSWBuo8pXE9BWiAxbzq36FemRBOkxiDC3Dx-jHU6-d9_-gq1JUgZipflE6h9X1FRZCv7yciMd_JqiGJ5n7ELAz5zdTP9mBzsgaFotLvcETCpMaqAA" />
+        </div>
+      </div>
+    </div>
+  </header>
+  <main class="w-full pt-20 bg-surface min-h-screen">
+    <div class="flex flex-col w-full">
+      <!-- Top Bar / Sub-Announcement Micro Bar -->
+      <section class="w-full bg-surface-container-high py-space-xs text-on-surface-variant">
+        <div
+          class="max-w-7xl mx-auto px-margin-mobile md:px-margin-tablet lg:px-margin-desktop flex flex-wrap items-center justify-between gap-space-xs">
+          <div class="flex items-center gap-space-xs">
+            <span class="material-symbols-outlined text-secondary text-[18px]">bolt</span>
+            <span class="font-label-md text-label-md font-semibold text-primary">Giao hỏa tốc 20 phút</span>
+            <span class="text-outline-variant">•</span>
+            <span class="font-body-sm text-body-sm hidden sm:inline">Cam kết nguyên vẹn lớp bọt kem và độ lạnh chuẩn
+              vị</span>
+          </div>
+          <div class="flex items-center gap-space-sm font-label-md text-label-md">
+            <span class="flex items-center gap-space-2xs text-secondary font-medium">
+              <span class="material-symbols-outlined text-[16px]">local_shipping</span>
+              Freeship đơn từ 99k
+            </span>
+            <span class="text-outline-variant">|</span>
+            <span class="font-bold text-tertiary-container uppercase tracking-wider">Code: VELVETNEW (-20%)</span>
+          </div>
+        </div>
+      </section>
+      <!-- Hero Section -->
+      <section class="relative w-full overflow-hidden bg-surface py-space-xl lg:py-space-3xl">
+        <!-- Ambient organic gradient glow -->
+        <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-tertiary-fixed/30 blur-3xl pointer-events-none">
+        </div>
+        <div class="absolute top-1/2 -right-32 w-96 h-96 rounded-full bg-primary-fixed/20 blur-3xl pointer-events-none">
+        </div>
+        <div class="max-w-7xl mx-auto px-margin-mobile md:px-margin-tablet lg:px-margin-desktop relative z-10">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-center">
+            <!-- Text Column (7 Cols) -->
+            <div class="lg:col-span-7 flex flex-col items-start space-y-space-md">
+              <div
+                class="inline-flex items-center gap-space-xs bg-surface-container-high px-space-sm py-space-2xs rounded-full shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Thủ
+                  Công • Chuẩn Vị Mộc</span>
+                <span
+                  class="bg-secondary-container text-on-secondary-container px-space-xs py-[1px] rounded-full font-label-sm text-label-sm">Freeship
+                  từ 99k</span>
+              </div>
+              <h1 class="font-display-lg text-display-lg text-primary tracking-tight leading-tight">
+                Hương vị yêu thích,<br />
+                <span class="italic text-tertiary-container font-serif">giao tận nơi trong 20 phút.</span>
+              </h1>
+              <p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+                Thưởng thức từng giọt cà phê Arabica Cầu Đất rang mộc đậm đà cùng trà Ô long sữa thượng hạng, được chắt
+                lọc tỉ mỉ từ những đồn điền cao nguyên sương mờ Việt Nam.
+              </p>
+              <!-- CTAs -->
+              <div class="flex flex-wrap items-center gap-space-sm pt-space-xs">
+                <a class="inline-flex items-center justify-center gap-space-xs bg-primary-container hover:bg-tertiary-container text-on-primary font-label-lg text-label-lg px-space-lg py-space-sm rounded-full shadow-md hover:shadow-lg transition-all transform active:scale-95"
+                  href="#menu-grid">
+                  <span>Đặt hàng ngay</span>
+                  <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </a>
+                <a class="inline-flex items-center justify-center gap-space-xs bg-surface-container hover:bg-surface-container-high text-primary font-label-lg text-label-lg px-space-lg py-space-sm rounded-full transition-all"
+                  href="#categories-section">
+                  <span>Xem thực đơn</span>
+                  <span class="material-symbols-outlined text-[18px]">restaurant_menu</span>
+                </a>
+              </div>
+              <!-- Proof Metrics -->
+              <div class="grid grid-cols-3 gap-space-md pt-space-md w-full max-w-lg">
+                <div class="flex flex-col">
+                  <span class="font-headline-md text-headline-md text-primary font-bold">100%</span>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant">Hạt Arabica Cầu Đất</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-headline-md text-headline-md text-primary font-bold">20m</span>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant">Giao nóng &amp; mát lạnh</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-headline-md text-headline-md text-primary font-bold">4.9★</span>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant">Trên 18.000 đánh giá</span>
+                </div>
+              </div>
+            </div>
+            <!-- Visual Hero Art (5 Cols) -->
+            <div class="lg:col-span-5 relative flex justify-center lg:justify-end">
+              <div
+                class="relative w-full max-w-md aspect-[4/5] rounded-3xl overflow-hidden shadow-xl bg-surface-container-low">
+                <img class="w-full h-full object-cover"
+                  data-alt="Artisanal beverage showcase featuring a tall glass of layered iced caramel macchiato with dense foam and a crystal glass of golden oolong milk tea topped with thick salted cheese cream, set on a warm polished marble surface in soft morning daylight with coffee beans and fresh tea leaves scattered nearby, studio lighting, warm editorial cream and espresso tones"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRqIVlViq8TtGSaU7skwu2M7ya95Ivn5ewqItZjewxqOyHJWKIIpG_lnqJ-1WJ858Svrji3NXY1jjqzfyRZ19JlsheBnzowXoSqG-vJQGjYLFHE3vfn3A8NKDBWitQkJtMn6qLUd-oGr2UGjDoj3BPjsHkXLfHENgGb9dLcBYkWcWKquWwjYnGCCbHOUI1iDm8y1UjmnqEcdtkEwONuEAHsPWgpcuFkwzFvNv3Os5lXWSbL_k1YUmUNA" />
+                <!-- Gradient Scrim for floating typography -->
+                <div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent"></div>
+                <!-- Floating Badge 1 -->
+                <div
+                  class="absolute top-6 left-6 bg-surface/90 backdrop-blur-md px-space-sm py-space-xs rounded-2xl shadow-lg flex items-center gap-space-xs">
+                  <div
+                    class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+                    <span class="material-symbols-outlined text-[18px]">eco</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="font-label-sm text-label-sm text-primary font-bold">Trà Ô Long Shan</span>
+                    <span class="font-body-sm text-[10px] text-on-surface-variant">Thu hái mộc hữu cơ</span>
+                  </div>
+                </div>
+                <!-- Floating Badge 2 -->
+                <div
+                  class="absolute top-28 right-4 bg-surface/90 backdrop-blur-md px-space-sm py-space-xs rounded-2xl shadow-lg flex items-center gap-space-xs">
+                  <div
+                    class="w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed-variant">
+                    <span class="material-symbols-outlined text-[18px]">local_fire_department</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="font-label-sm text-label-sm text-primary font-bold">Rang Chậm Fresh</span>
+                    <span class="font-body-sm text-[10px] text-on-surface-variant">Cầu Đất, Đà Lạt</span>
+                  </div>
+                </div>
+                <!-- Bottom Floating Feature Drink -->
+                <div
+                  class="absolute bottom-6 left-6 right-6 bg-surface/95 backdrop-blur-md p-space-sm rounded-2xl shadow-xl flex items-center justify-between">
+                  <div class="flex flex-col">
+                    <span
+                      class="font-label-sm text-label-sm text-tertiary-container font-semibold uppercase tracking-wide">Signature
+                      Duo</span>
+                    <span class="font-title-md text-title-md text-primary font-bold">Caramel Macchiato &amp; Oolong
+                      Cheese</span>
+                    <span class="font-label-md text-label-md text-primary-container font-bold">99.000đ <span
+                        class="line-through text-outline font-normal text-body-sm">115.000đ</span></span>
+                  </div>
+                  <button
+                    class="w-10 h-10 rounded-full bg-primary-container hover:bg-tertiary-container text-on-primary flex items-center justify-center shadow-md transition-all active:scale-95"
+                    onclick="openModalById('item-2')" title="Chọn mua nhanh">
+                    <span class="material-symbols-outlined text-[20px]">add</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Categories Grid / Slider -->
+      <section class="w-full bg-surface-container-low py-space-2xl" id="categories-section">
+        <div class="max-w-7xl mx-auto px-margin-mobile md:px-margin-tablet lg:px-margin-desktop">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-xs mb-space-lg">
+            <div>
+              <span class="font-label-sm text-label-sm text-tertiary-container uppercase tracking-wider font-bold">Thực
+                đơn đặc sắc</span>
+              <h2 class="font-headline-lg text-headline-lg text-primary">Danh Mục Thức Uống</h2>
+            </div>
+            <p class="font-body-md text-body-md text-on-surface-variant max-w-md">Từ cà phê phin mộc mạc tới trà sữa hoa
+              quả thanh nhã, chọn ngay gu vị yêu thích của bạn hôm nay.</p>
+          </div>
+          <!-- Categories Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-space-sm">
+            <!-- Category 1 -->
+            <button
+              class="category-btn group text-left bg-surface hover:bg-surface-container-highest p-space-sm rounded-2xl shadow-sm transition-all duration-300 flex flex-col items-center text-center"
+              onclick="filterCategory('coffee')">
+              <div
+                class="w-14 h-14 rounded-full bg-surface-container-high group-hover:bg-primary-container text-primary group-hover:text-on-primary flex items-center justify-center transition-colors mb-space-xs shadow-sm">
+                <span class="material-symbols-outlined text-[26px]">coffee</span>
+              </div>
+              <span class="font-title-md text-title-md text-primary">Cà phê</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">12 món mộc &amp; phin</span>
+            </button>
+            <!-- Category 2 -->
+            <button
+              class="category-btn group text-left bg-surface hover:bg-surface-container-highest p-space-sm rounded-2xl shadow-sm transition-all duration-300 flex flex-col items-center text-center"
+              onclick="filterCategory('milktea')">
+              <div
+                class="w-14 h-14 rounded-full bg-surface-container-high group-hover:bg-primary-container text-primary group-hover:text-on-primary flex items-center justify-center transition-colors mb-space-xs shadow-sm">
+                <span class="material-symbols-outlined text-[26px]">emoji_food_beverage</span>
+              </div>
+              <span class="font-title-md text-title-md text-primary">Trà sữa</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">16 loại trà lá ủ</span>
+            </button>
+            <!-- Category 3 -->
+            <button
+              class="category-btn group text-left bg-surface hover:bg-surface-container-highest p-space-sm rounded-2xl shadow-sm transition-all duration-300 flex flex-col items-center text-center"
+              onclick="filterCategory('fruittea')">
+              <div
+                class="w-14 h-14 rounded-full bg-surface-container-high group-hover:bg-primary-container text-primary group-hover:text-on-primary flex items-center justify-center transition-colors mb-space-xs shadow-sm">
+                <span class="material-symbols-outlined text-[26px]">nutrition</span>
+              </div>
+              <span class="font-title-md text-title-md text-primary">Trà trái cây</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">Trái cây tươi Đà Lạt</span>
+            </button>
+            <!-- Category 4 -->
+            <button
+              class="category-btn group text-left bg-surface hover:bg-surface-container-highest p-space-sm rounded-2xl shadow-sm transition-all duration-300 flex flex-col items-center text-center"
+              onclick="filterCategory('iceblended')">
+              <div
+                class="w-14 h-14 rounded-full bg-surface-container-high group-hover:bg-primary-container text-primary group-hover:text-on-primary flex items-center justify-center transition-colors mb-space-xs shadow-sm">
+                <span class="material-symbols-outlined text-[26px]">ac_unit</span>
+              </div>
+              <span class="font-title-md text-title-md text-primary">Đá xay Frost</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">Cacao béo mượt</span>
+            </button>
+            <!-- Category 5 -->
+            <button
+              class="category-btn group text-left bg-surface hover:bg-surface-container-highest p-space-sm rounded-2xl shadow-sm transition-all duration-300 flex flex-col items-center text-center"
+              onclick="filterCategory('freshjuice')">
+              <div
+                class="w-14 h-14 rounded-full bg-surface-container-high group-hover:bg-primary-container text-primary group-hover:text-on-primary flex items-center justify-center transition-colors mb-space-xs shadow-sm">
+                <span class="material-symbols-outlined text-[26px]">water_drop</span>
+              </div>
+              <span class="font-title-md text-title-md text-primary">Nước ép tươi</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">Ép lạnh giữ vitamin</span>
+            </button>
+            <!-- Category 6 -->
+            <button
+              class="category-btn group text-left bg-surface hover:bg-surface-container-highest p-space-sm rounded-2xl shadow-sm transition-all duration-300 flex flex-col items-center text-center"
+              onclick="filterCategory('toppings')">
+              <div
+                class="w-14 h-14 rounded-full bg-surface-container-high group-hover:bg-primary-container text-primary group-hover:text-on-primary flex items-center justify-center transition-colors mb-space-xs shadow-sm">
+                <span class="material-symbols-outlined text-[26px]">grain</span>
+              </div>
+              <span class="font-title-md text-title-md text-primary">Topping thủ công</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">Nấu mới mỗi 4 giờ</span>
+            </button>
+          </div>
+        </div>
+      </section>
+      <!-- Best Seller Section -->
+      <section class="w-full bg-surface py-space-3xl" id="menu-grid">
+        <div class="max-w-7xl mx-auto px-margin-mobile md:px-margin-tablet lg:px-margin-desktop">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-sm mb-space-xl">
+            <div class="flex flex-col">
+              <div
+                class="inline-flex items-center gap-space-2xs bg-tertiary-fixed text-on-tertiary-fixed-variant px-space-sm py-[2px] rounded-full w-fit mb-space-xs">
+                <span class="material-symbols-outlined text-[16px]">stars</span>
+                <span class="font-label-sm text-label-sm font-bold uppercase">Món Chạy Nhất • Yêu thích nhất
+                  tháng</span>
+              </div>
+              <h2 class="font-headline-lg text-headline-lg text-primary">Tuyển Chọn Đồ Uống Trứ Danh</h2>
+            </div>
+            <!-- Filter Tabs -->
+            <div
+              class="flex flex-wrap items-center gap-space-2xs bg-surface-container-low p-space-2xs rounded-full shadow-sm">
+              <button
+                class="tab-btn active-tab px-space-md py-space-2xs rounded-full font-label-md text-label-md transition-colors bg-primary-container text-on-primary"
+                onclick="filterItems('all')">Tất cả</button>
+              <button
+                class="tab-btn px-space-md py-space-2xs rounded-full font-label-md text-label-md transition-colors text-on-surface-variant hover:text-primary"
+                onclick="filterItems('coffee')">Cà phê</button>
+              <button
+                class="tab-btn px-space-md py-space-2xs rounded-full font-label-md text-label-md transition-colors text-on-surface-variant hover:text-primary"
+                onclick="filterItems('milktea')">Trà sữa</button>
+              <button
+                class="tab-btn px-space-md py-space-2xs rounded-full font-label-md text-label-md transition-colors text-on-surface-variant hover:text-primary"
+                onclick="filterItems('special')">Đặc sắc</button>
+            </div>
+          </div>
+          <!-- 8 Featured Products Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter-desktop">
+            <!-- Item 1 -->
+            <div
+              class="product-card group flex flex-col bg-surface-container-lowest rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+              data-category="coffee">
+              <div class="relative aspect-square w-full bg-surface-container-low overflow-hidden">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  data-alt="Traditional Vietnamese iced coffee with condensed milk, poured into a transparent ribbed highball glass showing distinct marble layers of espresso brown and sweet cream, condensation droplets, warm morning cafe ambiance"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcxwfEcup5UPCCxg2uqeWOgPgj_0DhY0Ig4xMEmqeoxGA5bM7ouBKozZ5YlDkex7wSK2Dgq9vfV6ITaQ5esFpzuhx6CjJ1y0N99Ne8aOhZaAhp9MIj-iceL75m4lQu6BcDqmBdBw6pED4Ast0WNzrvbjSaNQ4FL3iInh22QSYw1gcvYY_1m8mB2EdqvVsyNmY4TX6v9Iz4oDzlc4clxlNGja8SS7hJa_4CZkWDRHHw2SSwXg64_f0oYQ" />
+                <span
+                  class="absolute top-3 left-3 bg-tertiary-container text-on-tertiary font-label-sm text-label-sm px-space-xs py-[2px] rounded-full uppercase tracking-wider">Best
+                  Seller</span>
+                <div
+                  class="absolute bottom-3 right-3 bg-surface/90 backdrop-blur-sm px-space-xs py-[2px] rounded-full flex items-center gap-space-2xs text-primary font-bold text-[12px] shadow-sm">
+                  <span class="material-symbols-outlined text-[14px] text-amber-600 fill-current">star</span>
+                  <span>4.9</span>
+                  <span class="text-on-surface-variant font-normal">(1.2k)</span>
+                </div>
+              </div>
+              <div class="p-space-md flex flex-col flex-1 justify-between gap-space-sm">
+                <div>
+                  <h3
+                    class="font-headline-sm text-headline-sm text-primary font-bold group-hover:text-tertiary-container transition-colors">
+                    Cà phê sữa truyền thống</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-space-2xs">Đậm đà cà phê
+                    Robusta &amp; Arabica phối cùng sữa đặc ngọt dịu truyền thống.</p>
+                </div>
+                <div class="flex items-center justify-between pt-space-xs">
+                  <div class="flex flex-col">
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Giá từ</span>
+                    <span class="font-title-lg text-title-lg text-primary font-bold">45.000đ</span>
+                  </div>
+                  <button
+                    class="h-10 px-space-md rounded-full bg-primary-container hover:bg-tertiary-container text-on-primary flex items-center gap-space-2xs font-label-md text-label-md transition-transform active:scale-95 shadow-sm"
+                    onclick="openModal('item-1')">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    <span>Thêm</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Item 2 -->
+            <div
+              class="product-card group flex flex-col bg-surface-container-lowest rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+              data-category="milktea">
+              <div class="relative aspect-square w-full bg-surface-container-low overflow-hidden">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  data-alt="Roasted Oolong milk tea with chewy golden boba tapioca pearls in an artisanal glass cup, silky cream color, soft moody golden hour illumination, macro food styling with wooden tea tools in background"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAryEdGBWoLtzdtxbV_G_8L7c51op1bM75imhGB-DB4M6o2g8Qi31Byx_9mIOyX2BANULiLoAtOBkQuw7uuWXDvrkms1UT-V1GNymPRbGQmB7TG6MnonVcO-AzndAVgSaXvdXaO-9n2MJ5bthARwxMPtXyo8jxyeDBFzax-1_OYCEVCvJEwm0vRvhEUJ4uKHksQEb2E9DI7LtPaGENYjhLjPVcahmpeUMjGKoct8aZKotoNPdvglIHFaQ" />
+                <span
+                  class="absolute top-3 left-3 bg-secondary text-on-secondary font-label-sm text-label-sm px-space-xs py-[2px] rounded-full uppercase tracking-wider">Must
+                  Try</span>
+                <div
+                  class="absolute bottom-3 right-3 bg-surface/90 backdrop-blur-sm px-space-xs py-[2px] rounded-full flex items-center gap-space-2xs text-primary font-bold text-[12px] shadow-sm">
+                  <span class="material-symbols-outlined text-[14px] text-amber-600 fill-current">star</span>
+                  <span>5.0</span>
+                  <span class="text-on-surface-variant font-normal">(2.5k)</span>
+                </div>
+              </div>
+              <div class="p-space-md flex flex-col flex-1 justify-between gap-space-sm">
+                <div>
+                  <h3
+                    class="font-headline-sm text-headline-sm text-primary font-bold group-hover:text-tertiary-container transition-colors">
+                    Trà sữa Oolong Nướng</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-space-2xs">Hương vị trà
+                    rang thơm nồng, trân châu hoàng kim dai giòn mật ong.</p>
+                </div>
+                <div class="flex items-center justify-between pt-space-xs">
+                  <div class="flex flex-col">
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Giá từ</span>
+                    <span class="font-title-lg text-title-lg text-primary font-bold">49.000đ</span>
+                  </div>
+                  <button
+                    class="h-10 px-space-md rounded-full bg-primary-container hover:bg-tertiary-container text-on-primary flex items-center gap-space-2xs font-label-md text-label-md transition-transform active:scale-95 shadow-sm"
+                    onclick="openModal('item-2')">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    <span>Thêm</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Item 3 -->
+            <div
+              class="product-card group flex flex-col bg-surface-container-lowest rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+              data-category="coffee">
+              <div class="relative aspect-square w-full bg-surface-container-low overflow-hidden">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  data-alt="Saigon style Bac Xiu iced white coffee, high glass tumbler showing three artistic gradient layers of sweetened milk, rich fresh milk and dense coffee espresso foam on top with clean ice cubes"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcVOhZuJK0MSy8KdlLByAJWndk_FGbkqTP1I1FtrFBzJj7lFIY32c9igUE6L70-UgS8_HcwfW32kzzoDEFOJHyDRT0TQzvK4ou7e9YYrmF7vGCCRbEa8Y_lBXsiHnBZJlBSK2GsMY5Ohqne9s5_h7nbr6_LvWVRrVfID01ATNc3BXHJzs7b56Sog-AmxApsRjPZZxeoS5MhYs0w6MtZkpIpssO5eAXnA5uz5Xx3RezO4l2hET8SXR9AQ" />
+                <span
+                  class="absolute top-3 left-3 bg-tertiary-container text-on-tertiary font-label-sm text-label-sm px-space-xs py-[2px] rounded-full uppercase tracking-wider">Best
+                  Seller</span>
+                <div
+                  class="absolute bottom-3 right-3 bg-surface/90 backdrop-blur-sm px-space-xs py-[2px] rounded-full flex items-center gap-space-2xs text-primary font-bold text-[12px] shadow-sm">
+                  <span class="material-symbols-outlined text-[14px] text-amber-600 fill-current">star</span>
+                  <span>4.8</span>
+                  <span class="text-on-surface-variant font-normal">(890)</span>
+                </div>
+              </div>
+              <div class="p-space-md flex flex-col flex-1 justify-between gap-space-sm">
+                <div>
+                  <h3
+                    class="font-headline-sm text-headline-sm text-primary font-bold group-hover:text-tertiary-container transition-colors">
+                    Bạc xỉu Sài Gòn 3 tầng</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-space-2xs">Hòa quyện sữa
+                    tươi béo ngậy với tầng cà phê nồng nàn sóng sánh.</p>
+                </div>
+                <div class="flex items-center justify-between pt-space-xs">
+                  <div class="flex flex-col">
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Giá từ</span>
+                    <span class="font-title-lg text-title-lg text-primary font-bold">50.000đ</span>
+                  </div>
+                  <button
+                    class="h-10 px-space-md rounded-full bg-primary-container hover:bg-tertiary-container text-on-primary flex items-center gap-space-2xs font-label-md text-label-md transition-transform active:scale-95 shadow-sm"
+                    onclick="openModal('item-3')">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    <span>Thêm</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Item 4 -->
+            <div
+              class="product-card group flex flex-col bg-surface-container-lowest rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+              data-category="special">
+              <div class="relative aspect-square w-full bg-surface-container-low overflow-hidden">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  data-alt="Vibrant green Japanese Uji Matcha latte crowned with an indulgent savory whipped cheese foam layer, sprinkled with fine matcha powder, aesthetic minimalist ceramic setting with soft neutral light"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrdsPNQxosOpILdAk87YLD4m58X-c43tpQETLc1LTi2urP53XeQ2TiWeUdZqGmoppnBVswFFWOUIP0FHALZgen65zDN6zhbMHUyxUdxjz9LVywg_9jp-Rjyd83lXoaSS8xngaK1KYRei-zGkhEudfx2UNQrpF1w6WRJgmk1bMJP2JXSMnnkF3UCbn3l5G6uhoQwOup8lt82vP3BeqIZVa_A9Pnshvehyoy-SJdPZf6DcfjAxIXb6MAYg" />
+                <span
+                  class="absolute top-3 left-3 bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm px-space-xs py-[2px] rounded-full uppercase tracking-wider">Mới
+                  Ra Mắt</span>
+                <div
+                  class="absolute bottom-3 right-3 bg-surface/90 backdrop-blur-sm px-space-xs py-[2px] rounded-full flex items-center gap-space-2xs text-primary font-bold text-[12px] shadow-sm">
+                  <span class="material-symbols-outlined text-[14px] text-amber-600 fill-current">star</span>
+                  <span>4.9</span>
+                  <span class="text-on-surface-variant font-normal">(950)</span>
+                </div>
+              </div>
+              <div class="p-space-md flex flex-col flex-1 justify-between gap-space-sm">
+                <div>
+                  <h3
+                    class="font-headline-sm text-headline-sm text-primary font-bold group-hover:text-tertiary-container transition-colors">
+                    Matcha Latte Kem Cheese</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-space-2xs">Bột matcha Uji
+                    thượng hạng hòa quyện kem cheese dẻo mặn thơm béo.</p>
+                </div>
+                <div class="flex items-center justify-between pt-space-xs">
+                  <div class="flex flex-col">
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Giá từ</span>
+                    <span class="font-title-lg text-title-lg text-primary font-bold">55.000đ</span>
+                  </div>
+                  <button
+                    class="h-10 px-space-md rounded-full bg-primary-container hover:bg-tertiary-container text-on-primary flex items-center gap-space-2xs font-label-md text-label-md transition-transform active:scale-95 shadow-sm"
+                    onclick="openModal('item-4')">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    <span>Thêm</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Item 5 -->
+            <div
+              class="product-card group flex flex-col bg-surface-container-lowest rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+              data-category="fruittea">
+              <div class="relative aspect-square w-full bg-surface-container-low overflow-hidden">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  data-alt="Refreshing iced peach orange lemongrass tea with fresh juicy peach slices and fragrant lemongrass stalks in an elegant faceted glass, glistening condensation, summer brightness"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDM1sCJ57ZDL1NXxOiH1WBYj03QH124aYrkd4jSE1ejiOLIMJajd4wEIukGiHXk277JVcRl58UX4bwGLwutxgTBtbRVhSYa1NH-6b8vLPn2ctGGNB_nUez1z12ScuvLcfOqfQHnUXEkYOzN6ECFc87lBVZuhGnxiONNXsN0-QHsVU2pLi0BAHyOCHs1eS10qz3Gxi43zu-hNZQrTeSZr_3nyLMLE8-iS0F7_3yibSqMfRbuMBUyl6ptiw" />
+                <span
+                  class="absolute top-3 left-3 bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm px-space-xs py-[2px] rounded-full uppercase tracking-wider">Hot
+                  Summer</span>
+                <div
+                  class="absolute bottom-3 right-3 bg-surface/90 backdrop-blur-sm px-space-xs py-[2px] rounded-full flex items-center gap-space-2xs text-primary font-bold text-[12px] shadow-sm">
+                  <span class="material-symbols-outlined text-[14px] text-amber-600 fill-current">star</span>
+                  <span>4.7</span>
+                  <span class="text-on-surface-variant font-normal">(720)</span>
+                </div>
+              </div>
+              <div class="p-space-md flex flex-col flex-1 justify-between gap-space-sm">
+                <div>
+                  <h3
+                    class="font-headline-sm text-headline-sm text-primary font-bold group-hover:text-tertiary-container transition-colors">
+                    Trà Đào Cam Sả Tươi</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-space-2xs">Vị chua ngọt
+                    thanh mát giải nhiệt, miếng đào ngâm giòn ngọt thanh tao.</p>
+                </div>
+                <div class="flex items-center justify-between pt-space-xs">
+                  <div class="flex flex-col">
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Giá từ</span>
+                    <span class="font-title-lg text-title-lg text-primary font-bold">48.000đ</span>
+                  </div>
+                  <button
+                    class="h-10 px-space-md rounded-full bg-primary-container hover:bg-tertiary-container text-on-primary flex items-center gap-space-2xs font-label-md text-label-md transition-transform active:scale-95 shadow-sm"
+                    onclick="openModal('item-5')">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    <span>Thêm</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Item 6 -->
+            <div
+              class="product-card group flex flex-col bg-surface-container-lowest rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+              data-category="coffee">
+              <div class="relative aspect-square w-full bg-surface-container-low overflow-hidden">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  data-alt="Hue imperial salted cream coffee in vintage ceramic cup, thick velvety white salted cream float topped over dark aromatic drip coffee, artisanal Vietnamese cafe tabletop"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSng9CAbRV01vh57ouQ-KOfQDK0iYSjSUA26M6kNFWsgUvLx-w8J-NW_VW19UJsizWTvPfjo5ZdWq1IPotUjYPuhaZQAP37A49ymgNkd_yKK-MMCC1YJ8NxaG-Nk8WSJPe-36j0Aw8l2Ct6KK257RXZBNHusQ4pxC_Ip6rHiMvqXHQN5JME1P9ukBeNiBiqZog3GZrwPFhDdD4Ap84Bey6dFfSih2vNSQuaMyS2h8kmk560HZ6TU4qwA" />
+                <span
+                  class="absolute top-3 left-3 bg-tertiary-container text-on-tertiary font-label-sm text-label-sm px-space-xs py-[2px] rounded-full uppercase tracking-wider">Xu
+                  Hướng</span>
+                <div
+                  class="absolute bottom-3 right-3 bg-surface/90 backdrop-blur-sm px-space-xs py-[2px] rounded-full flex items-center gap-space-2xs text-primary font-bold text-[12px] shadow-sm">
+                  <span class="material-symbols-outlined text-[14px] text-amber-600 fill-current">star</span>
+                  <span>4.9</span>
+                  <span class="text-on-surface-variant font-normal">(1.8k)</span>
+                </div>
+              </div>
+              <div class="p-space-md flex flex-col flex-1 justify-between gap-space-sm">
+                <div>
+                  <h3
+                    class="font-headline-sm text-headline-sm text-primary font-bold group-hover:text-tertiary-container transition-colors">
+                    Cà phê Muối Cố Đô</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-space-2xs">Kem muối béo
+                    mặn đặc trưng tôn lên vị đắng ngọt quyến rũ bất tận.</p>
+                </div>
+                <div class="flex items-center justify-between pt-space-xs">
+                  <div class="flex flex-col">
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Giá từ</span>
+                    <span class="font-title-lg text-title-lg text-primary font-bold">52.000đ</span>
+                  </div>
+                  <button
+                    class="h-10 px-space-md rounded-full bg-primary-container hover:bg-tertiary-container text-on-primary flex items-center gap-space-2xs font-label-md text-label-md transition-transform active:scale-95 shadow-sm"
+                    onclick="openModal('item-6')">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    <span>Thêm</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Item 7 -->
+            <div
+              class="product-card group flex flex-col bg-surface-container-lowest rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+              data-category="milktea">
+              <div class="relative aspect-square w-full bg-surface-container-low overflow-hidden">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  data-alt="Brown sugar fresh milk boba tea with dark caramelized tiger stripes swirling along the glass walls, warm black pearls at bottom, creamy Dalat fresh milk, high resolution gourmet beverage"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuDiDphJ_l8-oT7AyZQ5P9voTOZrcEclpcqLjBZzP1UmQlsJJjJOqVMDgrJQnssWWRjhq41i1zkEFoCUSbNcU5Art14hyvmGxqhR8JU8JEG9pzwC_j2deEODcCWKg2D0drcIN0ZstUYx0UxRNyH2revO5zM-e0odN3bbzGgpavSpBdX_T-VuEXfq0IC0euh-bpTXFQO6w0z-SqAmEwPoClpcJpzYOiyVNSBiE39ib_Y8d0clP8zxqT2w" />
+                <span
+                  class="absolute top-3 left-3 bg-tertiary-container text-on-tertiary font-label-sm text-label-sm px-space-xs py-[2px] rounded-full uppercase tracking-wider">Best
+                  Seller</span>
+                <div
+                  class="absolute bottom-3 right-3 bg-surface/90 backdrop-blur-sm px-space-xs py-[2px] rounded-full flex items-center gap-space-2xs text-primary font-bold text-[12px] shadow-sm">
+                  <span class="material-symbols-outlined text-[14px] text-amber-600 fill-current">star</span>
+                  <span>4.9</span>
+                  <span class="text-on-surface-variant font-normal">(3.1k)</span>
+                </div>
+              </div>
+              <div class="p-space-md flex flex-col flex-1 justify-between gap-space-sm">
+                <div>
+                  <h3
+                    class="font-headline-sm text-headline-sm text-primary font-bold group-hover:text-tertiary-container transition-colors">
+                    Sữa Tươi Trân Châu Đường Đen</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-space-2xs">Sữa tươi thanh
+                    trùng Đà Lạt hòa cùng trân châu nấu đường mật mía ấm dẻo.</p>
+                </div>
+                <div class="flex items-center justify-between pt-space-xs">
+                  <div class="flex flex-col">
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Giá từ</span>
+                    <span class="font-title-lg text-title-lg text-primary font-bold">55.000đ</span>
+                  </div>
+                  <button
+                    class="h-10 px-space-md rounded-full bg-primary-container hover:bg-tertiary-container text-on-primary flex items-center gap-space-2xs font-label-md text-label-md transition-transform active:scale-95 shadow-sm"
+                    onclick="openModal('item-7')">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    <span>Thêm</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Item 8 -->
+            <div
+              class="product-card group flex flex-col bg-surface-container-lowest rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+              data-category="special">
+              <div class="relative aspect-square w-full bg-surface-container-low overflow-hidden">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  data-alt="Decadent blended iced chocolate cocoa beverage with rich coconut cream swirls, topped with roasted coconut chips and chocolate drizzle in a frosted glass tumbler, cozy cafe lighting"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhhl5_gen76lvMh7IPiRMoWRUrG7HScWFYnzhf_XMQs8dmbMD1O0zMBVQabM3-sQi9kGahmqSSCqgRr30I77A9pN7bo6mygINWDwQLj1pOiem7GtZstxC1RkFiNL6rLg2MF-PHulDnY6QmBBJts6oB9WfrinBoP61sZvACIe9ORNlEVH6jeehwLMej42SR4CdescP5_5SxrhobKK7SL0JZXMgjIf1Vu7bRx4z_CR9ZYL9vU-m8DFviSA" />
+                <span
+                  class="absolute top-3 left-3 bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm px-space-xs py-[2px] rounded-full uppercase tracking-wider">Mới
+                  Lạ</span>
+                <div
+                  class="absolute bottom-3 right-3 bg-surface/90 backdrop-blur-sm px-space-xs py-[2px] rounded-full flex items-center gap-space-2xs text-primary font-bold text-[12px] shadow-sm">
+                  <span class="material-symbols-outlined text-[14px] text-amber-600 fill-current">star</span>
+                  <span>4.8</span>
+                  <span class="text-on-surface-variant font-normal">(640)</span>
+                </div>
+              </div>
+              <div class="p-space-md flex flex-col flex-1 justify-between gap-space-sm">
+                <div>
+                  <h3
+                    class="font-headline-sm text-headline-sm text-primary font-bold group-hover:text-tertiary-container transition-colors">
+                    Cacao Dừa Đá Xay</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-space-2xs">Cacao nguyên
+                    chất bùi béo kết hợp tuyết cốt dừa Bến Tre mát lịm sảng khoái.</p>
+                </div>
+                <div class="flex items-center justify-between pt-space-xs">
+                  <div class="flex flex-col">
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Giá từ</span>
+                    <span class="font-title-lg text-title-lg text-primary font-bold">58.000đ</span>
+                  </div>
+                  <button
+                    class="h-10 px-space-md rounded-full bg-primary-container hover:bg-tertiary-container text-on-primary flex items-center gap-space-2xs font-label-md text-label-md transition-transform active:scale-95 shadow-sm"
+                    onclick="openModal('item-8')">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    <span>Thêm</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Story & Space Section with Promos Banner -->
+      <section class="w-full bg-surface-container-low py-space-3xl overflow-hidden">
+        <div class="max-w-7xl mx-auto px-margin-mobile md:px-margin-tablet lg:px-margin-desktop">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-center">
+            <!-- Story image mosaic (6 Cols) -->
+            <div class="lg:col-span-6 grid grid-cols-2 gap-space-sm">
+              <div class="rounded-3xl overflow-hidden shadow-lg h-72">
+                <img class="w-full h-full object-cover"
+                  data-alt="Artisanal barista hand-pouring hot water through a v60 ceramic dripper over fresh ground coffee blooming, aromatic steam rising in a warm wood interior cafe"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDno2FTjlDdLgkbltdGCOJ7tdEVf3-lExXR-cf1--IaOLPhOMaGk3WGU_fKQu8tAus49Y2udxf7apj5VP1bo_Mz7foGNGjWeOne6S4S2yClJ0Nepmcb2_6rQHLRI80N3dJWxsL0VZWsluO_gDf4I7n0BTLEjGLHWWgTRDk1aRdgcyM8XgsBg0u4r9FiRNGBamx_RdfCzYSLpoHSKGtVEVMBOT2YIBoNbdIxte6a2XK_mXH0Hi2ZfpPIOA" />
+              </div>
+              <div class="rounded-3xl overflow-hidden shadow-lg h-72 mt-space-md">
+                <img class="w-full h-full object-cover"
+                  data-alt="Atmospheric boutique coffee shop interior with comfortable lounge armchairs, warm pendant lighting, marble counter, indoor ficus plants, cozy reading corner"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZh8dcS_5anrzokBb6PiB-7iPRr-uZDsWqzPwVzQbpYkZonkLUZVUWEmPq7mS5zO1kp8ma9X2fDy-5dkL8A9kgTZl0kipJaRb9SrqMSPgivFVFq3W9og4-yc_GCRx_nEz4e9O5nGgLG0I82wlgxwH7K5sIkYXGG9iUmHXjDl_ek3C2l0_CWDTCQkRCHCdEh_pepYynkVWUq3WlKzVZ1ebvy5uJumyL6-MgLEck-na_pVyKbMM3na6Fkg" />
+              </div>
+            </div>
+            <!-- Story text & Promo Coupon (6 Cols) -->
+            <div class="lg:col-span-6 flex flex-col space-y-space-md">
+              <div
+                class="inline-flex items-center gap-space-xs text-tertiary-container font-label-sm text-label-sm uppercase font-bold tracking-wider">
+                <span class="material-symbols-outlined text-[18px]">verified</span>
+                <span>Triết lý pha chế thủ công</span>
+              </div>
+              <h2 class="font-headline-lg text-headline-lg text-primary leading-snug">
+                Tôn vinh hạt ngọc đất mẹ và nghệ thuật thưởng trà đương đại
+              </h2>
+              <p class="font-body-md text-body-md text-on-surface-variant">
+                Tại Velvet &amp; Brew, chúng tôi không phục vụ món đồ uống đóng sẵn. Từng giọt cà phê được chắt lọc qua
+                phin mộc hoặc máy nén áp suất chuẩn Ý, từng búp trà Oolong được ủ nở ở nhiệt độ 88°C để giữ trọn tầng
+                hương thanh khiết nhất.
+              </p>
+              <!-- Promo Banner Card -->
+              <div
+                class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-sm">
+                <div class="flex items-center gap-space-sm">
+                  <div
+                    class="w-12 h-12 rounded-xl bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed-variant shrink-0">
+                    <span class="material-symbols-outlined text-[24px]">redeem</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="font-title-md text-title-md text-primary font-bold">MUA 2 TẶNG 1 HÔM NAY</span>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">Áp dụng cho dòng Cà phê phin &amp;
+                      Trà Oolong</span>
+                  </div>
+                </div>
+                <button
+                  class="bg-primary-container hover:bg-tertiary-container text-on-primary px-space-md py-space-xs rounded-full font-label-md text-label-md transition-all whitespace-nowrap shadow-sm"
+                  onclick="copyCouponCode('VELVETNEW')">
+                  Lấy Mã: VELVETNEW
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Interactive Product Detail & Customization Modal -->
+      <div class="fixed inset-0 z-50 hidden flex items-center justify-center p-space-sm md:p-space-md"
+        id="product-modal">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-primary/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+        <!-- Modal Content Card -->
+        <div
+          class="relative bg-surface rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto z-10 flex flex-col">
+          <!-- Modal Header Close -->
+          <button
+            class="absolute top-4 right-4 w-9 h-9 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-primary flex items-center justify-center z-20 transition-transform active:scale-90"
+            onclick="closeModal()">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+          <div class="p-space-lg space-y-space-md">
+            <!-- Product Quick Preview -->
+            <div class="flex flex-col sm:flex-row gap-space-md items-start">
+              <div class="w-full sm:w-36 h-36 rounded-2xl overflow-hidden bg-surface-container shrink-0">
+                <img class="w-full h-full object-cover"
+                  data-alt="Artisanal beverage preview close-up in high resolution glass cup with ice and creamy toppings"
+                  id="modal-img"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAf8fTSbDQv8s7OW05-GCQkLIeimMlaPyRNd0rrHQcdx_KDFEhNzAboPpdyJeggBb_6nCNkCUybSqY9SkBpp9gdi6V5ihLXVDzZxd6Kbyy4TttjqbQ5IP3PpGVYmU0pQlkIbeMUkHv5JXDgseON6NyRdD1KnAb2Lq-GZTlcIp2fqkyJC3Ajhkxtu2aX7qrOn3V8y3sVRKpEOBp_K0i6hSSsQpHxuxY4BkzoX6yemG_OSw1WLqBgsy0NiA" />
+              </div>
+              <div class="flex flex-col justify-center">
+                <span
+                  class="bg-tertiary-container text-on-tertiary font-label-sm text-label-sm px-space-xs py-[2px] rounded-full uppercase tracking-wider w-fit mb-space-2xs"
+                  id="modal-badge">Best Seller</span>
+                <h3 class="font-headline-md text-headline-md text-primary font-bold" id="modal-title">Cà phê sữa truyền
+                  thống</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant mt-space-2xs" id="modal-desc">Đậm đà cà phê
+                  Robusta &amp; Arabica phối cùng sữa đặc ngọt dịu truyền thống.</p>
+                <span class="font-title-lg text-title-lg text-primary font-bold mt-space-2xs"
+                  id="modal-base-price">45.000đ</span>
+              </div>
+            </div>
+            <div class="h-[1px] w-full bg-surface-container-high"></div>
+            <!-- Customization Step 1: Size Selection -->
+            <div class="flex flex-col space-y-space-xs">
+              <div class="flex justify-between items-center">
+                <span class="font-title-md text-title-md text-primary font-bold">1. Chọn Kích Cỡ</span>
+                <span class="font-label-sm text-label-sm text-tertiary-container">Bắt buộc</span>
+              </div>
+              <div class="grid grid-cols-3 gap-space-xs">
+                <label class="cursor-pointer">
+                  <input checked="" class="peer sr-only" data-name="Size S" name="beverage-size"
+                    onchange="calculateModalTotal()" type="radio" value="0" />
+                  <div
+                    class="p-space-xs rounded-xl bg-surface-container text-center peer-checked:bg-primary-container peer-checked:text-on-primary transition-all">
+                    <span class="block font-label-md text-label-md font-bold">Size S</span>
+                    <span class="block text-[11px] opacity-80">Tiêu chuẩn</span>
+                  </div>
+                </label>
+                <label class="cursor-pointer">
+                  <input class="peer sr-only" data-name="Size M" name="beverage-size" onchange="calculateModalTotal()"
+                    type="radio" value="6000" />
+                  <div
+                    class="p-space-xs rounded-xl bg-surface-container text-center peer-checked:bg-primary-container peer-checked:text-on-primary transition-all">
+                    <span class="block font-label-md text-label-md font-bold">Size M</span>
+                    <span class="block text-[11px] opacity-80">+6.000đ</span>
+                  </div>
+                </label>
+                <label class="cursor-pointer">
+                  <input class="peer sr-only" data-name="Size L" name="beverage-size" onchange="calculateModalTotal()"
+                    type="radio" value="12000" />
+                  <div
+                    class="p-space-xs rounded-xl bg-surface-container text-center peer-checked:bg-primary-container peer-checked:text-on-primary transition-all">
+                    <span class="block font-label-md text-label-md font-bold">Size L</span>
+                    <span class="block text-[11px] opacity-80">+12.000đ</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <!-- Customization Step 2: Sugar Level -->
+            <div class="flex flex-col space-y-space-xs">
+              <span class="font-title-md text-title-md text-primary font-bold">2. Độ Ngọt (Đường)</span>
+              <div class="grid grid-cols-5 gap-space-2xs">
+                <label class="cursor-pointer">
+                  <input class="peer sr-only" name="beverage-sugar" type="radio" value="0%" />
+                  <div
+                    class="py-space-2xs text-center rounded-xl bg-surface-container text-on-surface font-label-sm text-label-sm peer-checked:bg-primary-container peer-checked:text-on-primary transition-all">
+                    0%</div>
+                </label>
+                <label class="cursor-pointer">
+                  <input class="peer sr-only" name="beverage-sugar" type="radio" value="30%" />
+                  <div
+                    class="py-space-2xs text-center rounded-xl bg-surface-container text-on-surface font-label-sm text-label-sm peer-checked:bg-primary-container peer-checked:text-on-primary transition-all">
+                    30%</div>
+                </label>
+                <label class="cursor-pointer">
+                  <input class="peer sr-only" name="beverage-sugar" type="radio" value="50%" />
+                  <div
+                    class="py-space-2xs text-center rounded-xl bg-surface-container text-on-surface font-label-sm text-label-sm peer-checked:bg-primary-container peer-checked:text-on-primary transition-all">
+                    50%</div>
+                </label>
+                <label class="cursor-pointer">
+                  <input checked="" class="peer sr-only" name="beverage-sugar" type="radio" value="70%" />
+                  <div
+                    class="py-space-2xs text-center rounded-xl bg-surface-container text-on-surface font-label-sm text-label-sm peer-checked:bg-primary-container peer-checked:text-on-primary transition-all">
+                    70%</div>
+                </label>
+                <label class="cursor-pointer">
+                  <input class="peer sr-only" name="beverage-sugar" type="radio" value="100%" />
+                  <div
+                    class="py-space-2xs text-center rounded-xl bg-surface-container text-on-surface font-label-sm text-label-sm peer-checked:bg-primary-container peer-checked:text-on-primary transition-all">
+                    100%</div>
+                </label>
+              </div>
+            </div>
+            <!-- Customization Step 3: Ice Level -->
+            <div class="flex flex-col space-y-space-xs">
+              <span class="font-title-md text-title-md text-primary font-bold">3. Lượng Đá</span>
+              <div class="grid grid-cols-4 gap-space-2xs">
+                <label class="cursor-pointer">
+                  <input class="peer sr-only" name="beverage-ice" type="radio" value="Không đá" />
+                  <div
+                    class="py-space-2xs text-center rounded-xl bg-surface-container text-on-surface font-label-sm text-label-sm peer-checked:bg-primary-container peer-checked:text-on-primary transition-all">
+                    Không đá</div>
+                </label>
+                <label class="cursor-pointer">
+                  <input class="peer sr-only" name="beverage-ice" type="radio" value="Ít đá" />
+                  <div
+                    class="py-space-2xs text-center rounded-xl bg-surface-container text-on-surface font-label-sm text-label-sm peer-checked:bg-primary-container peer-checked:text-on-primary transition-all">
+                    Ít đá</div>
+                </label>
+                <label class="cursor-pointer">
+                  <input checked="" class="peer sr-only" name="beverage-ice" type="radio" value="Chuẩn 100%" />
+                  <div
+                    class="py-space-2xs text-center rounded-xl bg-surface-container text-on-surface font-label-sm text-label-sm peer-checked:bg-primary-container peer-checked:text-on-primary transition-all">
+                    Chuẩn</div>
+                </label>
+                <label class="cursor-pointer">
+                  <input class="peer sr-only" name="beverage-ice" type="radio" value="Nhiều đá" />
+                  <div
+                    class="py-space-2xs text-center rounded-xl bg-surface-container text-on-surface font-label-sm text-label-sm peer-checked:bg-primary-container peer-checked:text-on-primary transition-all">
+                    Nhiều đá</div>
+                </label>
+              </div>
+            </div>
+            <!-- Customization Step 4: Toppings (Checkboxes) -->
+            <div class="flex flex-col space-y-space-xs">
+              <span class="font-title-md text-title-md text-primary font-bold">4. Thêm Topping Thơm Ngon</span>
+              <div class="space-y-space-2xs">
+                <label
+                  class="flex items-center justify-between p-space-xs rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer">
+                  <div class="flex items-center gap-space-xs">
+                    <input class="topping-check accent-primary w-4 h-4 rounded" data-name="Trân châu đen"
+                      onchange="calculateModalTotal()" type="checkbox" value="5000" />
+                    <span class="font-body-md text-body-md text-on-surface">Trân châu đen mật mía</span>
+                  </div>
+                  <span class="font-label-md text-label-md text-primary font-bold">+5.000đ</span>
+                </label>
+                <label
+                  class="flex items-center justify-between p-space-xs rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer">
+                  <div class="flex items-center gap-space-xs">
+                    <input class="topping-check accent-primary w-4 h-4 rounded" data-name="Trân châu hoàng kim"
+                      onchange="calculateModalTotal()" type="checkbox" value="7000" />
+                    <span class="font-body-md text-body-md text-on-surface">Trân châu hoàng kim dai giòn</span>
+                  </div>
+                  <span class="font-label-md text-label-md text-primary font-bold">+7.000đ</span>
+                </label>
+                <label
+                  class="flex items-center justify-between p-space-xs rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer">
+                  <div class="flex items-center gap-space-xs">
+                    <input class="topping-check accent-primary w-4 h-4 rounded" data-name="Pudding trứng"
+                      onchange="calculateModalTotal()" type="checkbox" value="8000" />
+                    <span class="font-body-md text-body-md text-on-surface">Pudding trứng sữa béo ngậy</span>
+                  </div>
+                  <span class="font-label-md text-label-md text-primary font-bold">+8.000đ</span>
+                </label>
+                <label
+                  class="flex items-center justify-between p-space-xs rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer">
+                  <div class="flex items-center gap-space-xs">
+                    <input class="topping-check accent-primary w-4 h-4 rounded" data-name="Kem Cheese dẻo"
+                      onchange="calculateModalTotal()" type="checkbox" value="10000" />
+                    <span class="font-body-md text-body-md text-on-surface">Lớp váng sữa Kem Cheese dẻo mặn</span>
+                  </div>
+                  <span class="font-label-md text-label-md text-primary font-bold">+10.000đ</span>
+                </label>
+                <label
+                  class="flex items-center justify-between p-space-xs rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer">
+                  <div class="flex items-center gap-space-xs">
+                    <input class="topping-check accent-primary w-4 h-4 rounded" data-name="Hạt sen Huế"
+                      onchange="calculateModalTotal()" type="checkbox" value="10000" />
+                    <span class="font-body-md text-body-md text-on-surface">Hạt sen Cố Đô ninh mềm</span>
+                  </div>
+                  <span class="font-label-md text-label-md text-primary font-bold">+10.000đ</span>
+                </label>
+              </div>
+            </div>
+            <!-- Quantity Counter & Total Bar -->
+            <div class="pt-space-xs flex flex-col sm:flex-row items-center justify-between gap-space-md">
+              <div class="flex items-center bg-surface-container-high rounded-full p-1">
+                <button
+                  class="w-9 h-9 rounded-full bg-surface hover:bg-surface-container-highest text-primary flex items-center justify-center font-bold text-lg transition-transform active:scale-90"
+                  onclick="changeModalQty(-1)">-</button>
+                <span class="w-12 text-center font-bold font-title-md text-title-md text-primary"
+                  id="modal-qty">1</span>
+                <button
+                  class="w-9 h-9 rounded-full bg-surface hover:bg-surface-container-highest text-primary flex items-center justify-center font-bold text-lg transition-transform active:scale-90"
+                  onclick="changeModalQty(1)">+</button>
+              </div>
+              <div class="flex items-center gap-space-xs w-full sm:w-auto">
+                <button
+                  class="flex-1 sm:flex-initial h-12 px-space-lg rounded-full bg-primary-container hover:bg-tertiary-container text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-space-xs shadow-md transition-all active:scale-95"
+                  onclick="addToCartFromModal()">
+                  <span class="material-symbols-outlined text-[20px]">local_mall</span>
+                  <span>Thêm • <span id="modal-total-btn">45.000đ</span></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Slide-Over Cart Drawer -->
+      <div class="fixed inset-0 z-50 pointer-events-none transition-all duration-300" id="cart-drawer">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-primary/50 opacity-0 pointer-events-none transition-opacity duration-300"
+          id="cart-backdrop" onclick="toggleCartDrawer(false)"></div>
+        <!-- Drawer Panel -->
+        <div
+          class="absolute top-0 right-0 w-full max-w-md h-full bg-surface shadow-2xl flex flex-col pointer-events-auto transform translate-x-full transition-transform duration-300 ease-in-out"
+          id="cart-panel">
+          <!-- Drawer Header -->
+          <div class="h-20 px-space-md flex items-center justify-between bg-surface-container-high">
+            <div class="flex items-center gap-space-xs">
+              <span class="material-symbols-outlined text-primary text-[24px]">shopping_bag</span>
+              <h3 class="font-headline-sm text-headline-sm text-primary font-bold">Giỏ Hàng Của Bạn</h3>
+              <span
+                class="bg-primary-container text-on-primary font-label-sm text-label-sm px-space-xs py-[2px] rounded-full"
+                id="cart-item-count-badge">3 món</span>
+            </div>
+            <button
+              class="w-8 h-8 rounded-full bg-surface text-on-surface-variant hover:text-primary flex items-center justify-center"
+              onclick="toggleCartDrawer(false)">
+              <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+          <!-- Drawer Items List -->
+          <div class="flex-1 overflow-y-auto p-space-md space-y-space-sm" id="cart-items-container">
+            <!-- Demo Item 1 -->
+            <div
+              class="cart-item bg-surface-container-lowest p-space-sm rounded-2xl shadow-sm flex gap-space-sm relative">
+              <div class="w-16 h-16 rounded-xl bg-surface-container shrink-0 overflow-hidden">
+                <img class="w-full h-full object-cover"
+                  data-alt="Traditional iced Vietnamese coffee with sweet milk in cup"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBD1XdpUDm9O8k0GhvhY1E0MSsDZrMuREa_W1Tvis74aVL_h6q9AgV0GzkB4BVfBlafnMWDnoZJWxJeeTECxxlE6mlT31OZGNRBKSM74GJfH0bVkDvtXsgrIO-TZwAd2ad1n_JKikyfLtFug5-NpTuKcGIyCQRM9Bx-9dkGjFLMFP_2y1pIU2EE8o0i2VAFg3jAOsGi01PIPv7Jx7Kjmh0PkWUcgED1N4iNAgIZ7mEH5n7kaG1PoXbLg" />
+              </div>
+              <div class="flex flex-col flex-1 justify-between">
+                <div class="flex justify-between items-start pr-6">
+                  <span class="font-title-md text-title-md text-primary font-bold">Cà phê sữa truyền thống</span>
+                </div>
+                <span class="font-body-sm text-body-sm text-on-surface-variant">Size M • 70% đường • Chuẩn đá</span>
+                <div class="flex items-center justify-between mt-space-2xs">
+                  <span class="font-label-md text-label-md text-primary font-bold">51.000đ</span>
+                  <div class="flex items-center bg-surface-container-high rounded-full px-2 py-1">
+                    <button class="text-primary font-bold px-1.5">-</button>
+                    <span class="font-body-sm text-body-sm px-2 font-bold">1</span>
+                    <button class="text-primary font-bold px-1.5">+</button>
+                  </div>
+                </div>
+              </div>
+              <button class="absolute top-2 right-2 text-outline hover:text-error transition-colors" title="Xóa món">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+              </button>
+            </div>
+            <!-- Demo Item 2 -->
+            <div
+              class="cart-item bg-surface-container-lowest p-space-sm rounded-2xl shadow-sm flex gap-space-sm relative">
+              <div class="w-16 h-16 rounded-xl bg-surface-container shrink-0 overflow-hidden">
+                <img class="w-full h-full object-cover" data-alt="Roasted Oolong milk tea with chewy golden boba"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuadraCjAjc3NzFPxF8dn1C7OH6581W4pQhOAJcPRfBWL8FpISb9h0UOC1qV-MaSKlPrXeN_belLlpM_iVIK0az_Ckt7xhwLwAIBCS9gXmLnoq-UoBG_VW_z-4iSVLDZZ25aFBigssz6rKvvfmRKfow7HbflBz34YMijr84Fn_8sF5mgDhOKKB-NoIhyFB-c3c_Y7SP03lM1-6kRwZFdYeXmNrjERxmPQvsbjaILsWxOviCgFcZLI7zA" />
+              </div>
+              <div class="flex flex-col flex-1 justify-between">
+                <div class="flex justify-between items-start pr-6">
+                  <span class="font-title-md text-title-md text-primary font-bold">Trà sữa Oolong Nướng</span>
+                </div>
+                <span class="font-body-sm text-body-sm text-on-surface-variant">Size L • Trân châu hoàng kim
+                  (+7k)</span>
+                <div class="flex items-center justify-between mt-space-2xs">
+                  <span class="font-label-md text-label-md text-primary font-bold">68.000đ</span>
+                  <div class="flex items-center bg-surface-container-high rounded-full px-2 py-1">
+                    <button class="text-primary font-bold px-1.5">-</button>
+                    <span class="font-body-sm text-body-sm px-2 font-bold">1</span>
+                    <button class="text-primary font-bold px-1.5">+</button>
+                  </div>
+                </div>
+              </div>
+              <button class="absolute top-2 right-2 text-outline hover:text-error transition-colors" title="Xóa món">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+              </button>
+            </div>
+          </div>
+          <!-- Drawer Footer / Summary -->
+          <div class="p-space-md bg-surface-container-low space-y-space-xs shadow-lg">
+            <div class="flex justify-between font-body-sm text-body-sm text-on-surface-variant">
+              <span>Tạm tính:</span>
+              <span class="font-medium text-on-surface" id="cart-subtotal">119.000đ</span>
+            </div>
+            <div class="flex justify-between font-body-sm text-body-sm text-on-surface-variant">
+              <span>Phí giao hàng (2.4 km):</span>
+              <span class="text-secondary font-semibold">Miễn phí (Freeship)</span>
+            </div>
+            <div class="flex justify-between font-body-sm text-body-sm text-on-surface-variant">
+              <span>Voucher giảm giá (VELVETNEW):</span>
+              <span class="text-error font-semibold">-20.000đ</span>
+            </div>
+            <div class="h-[1px] bg-surface-container-highest my-space-xs"></div>
+            <div class="flex justify-between items-center py-space-2xs">
+              <span class="font-title-md text-title-md text-primary font-bold">Tổng thanh toán:</span>
+              <span class="font-headline-sm text-headline-sm text-primary font-bold"
+                id="cart-total-final">99.000đ</span>
+            </div>
+            <button
+              class="w-full h-12 rounded-full bg-primary-container hover:bg-tertiary-container text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-space-xs shadow-md transition-all active:scale-95"
+              onclick="triggerCheckoutAlert()">
+              <span>Thanh toán ngay (COD / Chuyển khoản)</span>
+              <span class="material-symbols-outlined text-[18px]">lock</span>
+            </button>
+            <button
+              class="w-full text-center py-space-xs font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
+              onclick="toggleCartDrawer(false)">
+              Chọn thêm thức uống khác
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Toast Notification Simulation -->
+      <div
+        class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none bg-primary text-on-primary px-space-md py-space-sm rounded-full shadow-2xl flex items-center gap-space-xs"
+        id="toast-msg">
+        <span class="material-symbols-outlined text-secondary-fixed text-[20px]">check_circle</span>
+        <span class="font-label-md text-label-md font-medium" id="toast-text">Đã thêm món vào giỏ hàng thành
+          công!</span>
+      </div>
+    </div>
+    <script>
+      // Product Catalog Demo Data
+      const productsDB = {
+        'item-1': {
+          id: 'item-1',
+          title: 'Cà phê sữa truyền thống',
+          desc: 'Đậm đà cà phê Robusta & Arabica phối cùng sữa đặc ngọt dịu truyền thống.',
+          price: 45000,
+          badge: 'Best Seller',
+          category: 'coffee'
+        },
+        'item-2': {
+          id: 'item-2',
+          title: 'Trà sữa Oolong Nướng',
+          desc: 'Hương vị trà rang thơm nồng, trân châu hoàng kim dai giòn mật ong.',
+          price: 49000,
+          badge: 'Must Try',
+          category: 'milktea'
+        },
+        'item-3': {
+          id: 'item-3',
+          title: 'Bạc xỉu Sài Gòn 3 tầng',
+          desc: 'Hòa quyện sữa tươi béo ngậy với tầng cà phê nồng nàn sóng sánh.',
+          price: 50000,
+          badge: 'Best Seller',
+          category: 'coffee'
+        },
+        'item-4': {
+          id: 'item-4',
+          title: 'Matcha Latte Kem Cheese',
+          desc: 'Bột matcha Uji thượng hạng hòa quyện kem cheese dẻo mặn thơm béo.',
+          price: 55000,
+          badge: 'Mới Ra Mắt',
+          category: 'special'
+        },
+        'item-5': {
+          id: 'item-5',
+          title: 'Trà Đào Cam Sả Tươi',
+          desc: 'Vị chua ngọt thanh mát giải nhiệt, miếng đào ngâm giòn ngọt thanh tao.',
+          price: 48000,
+          badge: 'Hot Summer',
+          category: 'fruittea'
+        },
+        'item-6': {
+          id: 'item-6',
+          title: 'Cà phê Muối Cố Đô',
+          desc: 'Kem muối béo mặn đặc trưng tôn lên vị đắng ngọt quyến rũ bất tận.',
+          price: 52000,
+          badge: 'Xu Hướng',
+          category: 'coffee'
+        },
+        'item-7': {
+          id: 'item-7',
+          title: 'Sữa Tươi Trân Châu Đường Đen',
+          desc: 'Sữa tươi thanh trùng Đà Lạt hòa cùng trân châu nấu đường mật mía ấm dẻo.',
+          price: 55000,
+          badge: 'Best Seller',
+          category: 'milktea'
+        },
+        'item-8': {
+          id: 'item-8',
+          title: 'Cacao Dừa Đá Xay',
+          desc: 'Cacao nguyên chất bùi béo kết hợp tuyết cốt dừa Bến Tre mát lịm sảng khoái.',
+          price: 58000,
+          badge: 'Mới Lạ',
+          category: 'special'
+        }
+      };
+
+      let activeItem = productsDB['item-1'];
+      let currentQty = 1;
+
+      function formatVND(amount) {
+        return amount.toLocaleString('vi-VN') + 'đ';
+      }
+
+      function openModal(id) {
+        activeItem = productsDB[id] || productsDB['item-1'];
+        currentQty = 1;
+        document.getElementById('modal-qty').innerText = '1';
+        document.getElementById('modal-title').innerText = activeItem.title;
+        document.getElementById('modal-desc').innerText = activeItem.desc;
+        document.getElementById('modal-badge').innerText = activeItem.badge;
+        document.getElementById('modal-base-price').innerText = formatVND(activeItem.price);
+
+        // Reset default radio selections
+        const sizeRadios = document.querySelectorAll('input[name="beverage-size"]');
+        if (sizeRadios.length) sizeRadios[0].checked = true;
+
+        const sugarRadios = document.querySelectorAll('input[name="beverage-sugar"]');
+        if (sugarRadios.length > 3) sugarRadios[3].checked = true;
+
+        const iceRadios = document.querySelectorAll('input[name="beverage-ice"]');
+        if (iceRadios.length > 2) iceRadios[2].checked = true;
+
+        // Reset toppings checkboxes
+        document.querySelectorAll('.topping-check').forEach(chk => chk.checked = false);
+
+        calculateModalTotal();
+        document.getElementById('product-modal').classList.remove('hidden');
+      }
+
+      function openModalById(id) {
+        openModal(id);
+      }
+
+      function closeModal() {
+        document.getElementById('product-modal').classList.add('hidden');
+      }
+
+      function changeModalQty(delta) {
+        currentQty = Math.max(1, currentQty + delta);
+        document.getElementById('modal-qty').innerText = currentQty;
+        calculateModalTotal();
+      }
+
+      function calculateModalTotal() {
+        if (!activeItem) return;
+        let base = activeItem.price;
+
+        // Size delta
+        const selectedSize = document.querySelector('input[name="beverage-size"]:checked');
+        if (selectedSize) {
+          base += parseInt(selectedSize.value, 10);
+        }
+
+        // Toppings
+        document.querySelectorAll('.topping-check:checked').forEach(chk => {
+          base += parseInt(chk.value, 10);
+        });
+
+        const total = base * currentQty;
+        document.getElementById('modal-total-btn').innerText = formatVND(total);
+      }
+
+      function addToCartFromModal() {
+        const selectedSizeName = document.querySelector('input[name="beverage-size"]:checked').getAttribute('data-name');
+        closeModal();
+        showToast(`Đã thêm ${currentQty}x ${activeItem.title} (${selectedSizeName}) vào giỏ hàng!`);
+
+        // Auto preview cart drawer after adding
+        setTimeout(() => {
+          toggleCartDrawer(true);
+        }, 600);
+      }
+
+      function toggleCartDrawer(open) {
+        const drawer = document.getElementById('cart-drawer');
+        const backdrop = document.getElementById('cart-backdrop');
+        const panel = document.getElementById('cart-panel');
+
+        if (open) {
+          drawer.classList.remove('pointer-events-none');
+          backdrop.classList.remove('opacity-0', 'pointer-events-none');
+          backdrop.classList.add('opacity-100');
+          panel.classList.remove('translate-x-full');
+        } else {
+          backdrop.classList.remove('opacity-100');
+          backdrop.classList.add('opacity-0', 'pointer-events-none');
+          panel.classList.add('translate-x-full');
+          setTimeout(() => {
+            drawer.classList.add('pointer-events-none');
+          }, 300);
+        }
+      }
+
+      // Hook into shell cart button if present
+      document.addEventListener('DOMContentLoaded', () => {
+        const shellCartBtn = document.querySelector('button[aria-label="Giỏ hàng"]');
+        if (shellCartBtn) {
+          shellCartBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleCartDrawer(true);
+          });
+        }
+      });
+
+      function showToast(text) {
+        const toast = document.getElementById('toast-msg');
+        const toastText = document.getElementById('toast-text');
+        toastText.innerText = text;
+        toast.classList.remove('translate-y-24', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+
+        setTimeout(() => {
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('translate-y-24', 'opacity-0');
+        }, 3200);
+      }
+
+      function copyCouponCode(code) {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(code);
+        }
+        showToast(`Đã lưu mã ưu đãi "${code}" vào bộ nhớ tạm!`);
+      }
+
+      function filterCategory(cat) {
+        filterItems(cat);
+        const grid = document.getElementById('menu-grid');
+        if (grid) {
+          grid.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+
+      function filterItems(category) {
+        // Update tab pills styling
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.classList.remove('bg-primary-container', 'text-on-primary');
+          btn.classList.add('text-on-surface-variant');
+        });
+
+        const targetEventBtn = window.event ? window.event.currentTarget : null;
+        if (targetEventBtn && targetEventBtn.classList.contains('tab-btn')) {
+          targetEventBtn.classList.add('bg-primary-container', 'text-on-primary');
+          targetEventBtn.classList.remove('text-on-surface-variant');
+        }
+
+        const cards = document.querySelectorAll('.product-card');
+        cards.forEach(card => {
+          const itemCat = card.getAttribute('data-category');
+          if (category === 'all' || itemCat === category) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      }
+
+      function triggerCheckoutAlert() {
+        showToast("Đang chuyển hướng sang cổng thanh toán an toàn...");
+        setTimeout(() => {
+          toggleCartDrawer(false);
+        }, 1200);
+      }
+    </script>
+  </main>
+  <footer class="w-full bg-surface-container-low text-on-surface shadow-[0_-1px_12px_rgba(62,39,35,0.03)]">
+    <div class="w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-tablet lg:px-margin-desktop py-space-3xl">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-gutter-desktop">
+        <div class="lg:col-span-2 flex flex-col gap-space-md">
+          <div class="flex items-center gap-space-sm"><img alt="Velvet &amp; Brew Brand Logo"
+              class="h-8 w-auto object-contain"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRMxOCJJIwhg2mAHon8lvGMa1yym3orqDiRdlg40dBTFx0TvEYfZ71neLTQ8uprX8147qfyIYLJzVxXFz0-7ICt2RDwvn4jZ2tle3rHiJDQ2CKmX2n687yOluhuMxETFM7MOXoF--pdXecPCdu558V282Cl4oqc_UILl-QtvYPqxNgKmGVit_2jgH1wviVhHrNLduF8f-hBJVF13RvckcnmMoRE6pnVYhqI2aR7tzp6m2ScQKt6sznsQ" /><span
+              class="font-headline-sm text-headline-sm text-primary leading-tight tracking-tight">Velvet &amp;
+              Brew</span></div>
+          <p class="font-body-md text-body-md text-on-surface-variant max-w-md">Nơi nghệ thuật pha chế thủ công hòa
+            quyện cùng xúc cảm đương đại. Từng giọt cà phê chắt lọc và lá trà tuyển chọn mang lại trải nghiệm thư thái
+            tuyệt mỹ.</p>
+          <div class="flex flex-col gap-space-2xs">
+            <div class="flex items-center gap-space-xs text-on-surface-variant"><span
+                class="material-symbols-outlined text-[18px] text-tertiary-container">schedule</span><span
+                class="font-body-sm text-body-sm">Thứ Hai - Chủ Nhật: 07:00 - 22:30</span></div>
+            <div class="flex items-center gap-space-xs text-on-surface-variant"><span
+                class="material-symbols-outlined text-[18px] text-tertiary-container">location_on</span><span
+                class="font-body-sm text-body-sm">124 Phố Cổ, Quận Hoàn Kiếm, Hà Nội</span></div>
+            <div class="flex items-center gap-space-xs text-on-surface-variant"><span
+                class="material-symbols-outlined text-[18px] text-tertiary-container">call</span><span
+                class="font-body-sm text-body-sm">+84 (0) 24 3828 9999</span></div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-space-sm"><span class="font-title-md text-title-md text-primary">Khám Phá</span>
+          <div class="flex flex-col gap-space-xs"><a
+              class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Cà
+              phê Specialty</a><a
+              class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+              href="#">Trà Shan Tuyết &amp; Oolong</a><a
+              class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+              href="#">Bánh ngọt thủ công</a><a
+              class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Bộ
+              quà tặng mùa lễ hội</a><a
+              class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+              href="#">Đăng ký hội viên BrewClub</a></div>
+        </div>
+        <div class="flex flex-col gap-space-sm"><span class="font-title-md text-title-md text-primary">Hỗ Trợ</span>
+          <div class="flex flex-col gap-space-xs"><a
+              class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+              href="#">Chính sách giao hàng</a><a
+              class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+              href="#">Hướng dẫn đặt đồ uống</a><a
+              class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+              href="#">Bảo mật thông tin</a><a
+              class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+              href="#">Hợp tác nhượng quyền</a><a
+              class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors"
+              href="#">Liên hệ phản hồi</a></div>
+        </div>
+        <div class="flex flex-col gap-space-sm"><span class="font-title-md text-title-md text-primary">Bản Tin Hương
+            Vị</span>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">Đăng ký nhận ưu đãi độc quyền và cảm hứng thưởng
+            thức cà phê mỗi tuần.</p>
+          <div class="flex flex-col gap-space-xs">
+            <div
+              class="flex items-center bg-surface-container-lowest rounded-full p-space-2xs shadow-[0_2px_8px_rgba(62,39,35,0.04)]">
+              <input
+                class="bg-transparent px-space-sm py-space-xs text-on-surface placeholder:text-outline font-body-sm text-body-sm outline-none w-full"
+                placeholder="Email của bạn..." type="email" /><button
+                class="bg-primary-container text-on-primary hover:bg-tertiary-container rounded-full px-space-md py-space-xs font-label-sm text-label-sm transition-colors shrink-0"
+                type="button">Gửi</button></div>
+          </div>
+          <div class="flex items-center gap-space-xs pt-space-xs text-on-surface-variant"><span
+              class="material-symbols-outlined text-[20px] hover:text-primary cursor-pointer transition-colors">local_cafe</span><span
+              class="material-symbols-outlined text-[20px] hover:text-primary cursor-pointer transition-colors">photo_camera</span><span
+              class="material-symbols-outlined text-[20px] hover:text-primary cursor-pointer transition-colors">share</span><span
+              class="material-symbols-outlined text-[20px] hover:text-primary cursor-pointer transition-colors">forum</span>
+          </div>
+        </div>
+      </div>
+      <div
+        class="mt-space-2xl pt-space-md flex flex-col md:flex-row items-center justify-between gap-space-sm text-on-surface-variant font-body-sm text-body-sm">
+        <p>© 2024 Velvet &amp; Brew Artisanal Coffee &amp; Tea. Tất cả quyền được bảo lưu.</p>
+        <div class="flex items-center gap-space-md"><a class="hover:text-primary transition-colors" href="#">Điều khoản
+            dịch vụ</a><a class="hover:text-primary transition-colors" href="#">Chính sách quyền riêng tư</a></div>
+      </div>
+    </div>
+  </footer>
+</body>
+
+</html>
