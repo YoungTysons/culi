@@ -6,11 +6,13 @@ export default function MenuSection({
   onSelectFilter,
   onSelectProduct,
   loading,
+  searchQuery,
 }) {
   const tabs = [
     ["all", "Tất cả"],
     ["coffee", "Cà phê"],
     ["milktea", "Trà sữa"],
+    ["fruittea", "Trà trái cây"],
     ["special", "Đặc sắc"],
   ];
 
@@ -21,7 +23,13 @@ export default function MenuSection({
           <span className="hot-label">
             ★ MÓN CHẠY NHẤT · YÊU THÍCH NHẤT THÁNG
           </span>
-          <h2>Tuyển Chọn Đồ Uống Trứ Danh</h2>
+          <h2>
+            {searchQuery ? (
+              <>Kết quả tìm kiếm: &ldquo;{searchQuery}&rdquo;</>
+            ) : (
+              "Tuyển Chọn Đồ Uống Trứ Danh"
+            )}
+          </h2>
         </div>
         <div className="tabs">
           {tabs.map(([id, title]) => (
@@ -41,8 +49,10 @@ export default function MenuSection({
             Đang tải thực đơn...
           </p>
         ) : products.length === 0 ? (
-          <p style={{ textAlign: "center", gridColumn: "1 / -1", padding: "40px" }}>
-            Chưa có sản phẩm nào trong danh mục này.
+          <p style={{ textAlign: "center", gridColumn: "1 / -1", padding: "40px", color: "var(--muted)" }}>
+            {searchQuery
+              ? `Không tìm thấy đồ uống nào phù hợp với từ khóa "${searchQuery}".`
+              : "Chưa có sản phẩm nào trong danh mục này."}
           </p>
         ) : (
           products.map((product) => (

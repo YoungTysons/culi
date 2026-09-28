@@ -5,6 +5,7 @@ export default function CartDrawer({
   cart,
   onClose,
   onChangeQuantity,
+  onOpenCheckout,
 }) {
   if (!isOpen) return null;
 
@@ -56,8 +57,16 @@ export default function CartDrawer({
           <strong>Tổng cộng</strong>
           <strong>{money(subtotal)}</strong>
         </div>
-        <button className="checkout">Tiến hành thanh toán →</button>
+        <button
+          className="checkout"
+          onClick={() => {
+            onClose();          // Đóng thanh drawer
+            onOpenCheckout();   // Kích hoạt mở modal checkout
+          }}
+        >
+          Tiến hành thanh toán →
+        </button>
       </aside>
-    </div>
+    </div >
   );
 }

@@ -57,22 +57,19 @@ header {
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-width: 215px;
 }
-.brand-mark {
-  width: 37px;
-  height: 37px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--brown);
-  color: white;
-  font-family: Georgia, serif;
-  font-size: 14px;
+.brand-logo-img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  filter: drop-shadow(0 2px 5px rgba(43, 23, 19, 0.12));
 }
-.brand-mark span {
-  color: #e8a066;
+.brand:hover .brand-logo-img {
+  transform: scale(1.08) rotate(-2deg);
 }
 .brand strong,
 .brand small {
@@ -118,38 +115,142 @@ nav a.active {
   border-radius: 50%;
   background: transparent;
   color: var(--muted);
-  font-size: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+.header-actions button .material-symbols-outlined {
+  font-size: 21px;
 }
 .header-actions button:hover {
   background: var(--sand);
+  color: var(--brown);
+}
+/* Header Search Bar */
+.header-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.header-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1.5px solid rgba(67, 40, 35, 0.2);
+  border-radius: 999px;
+  height: 38px;
+  padding: 0 8px 0 12px;
+  box-shadow: 0 4px 14px rgba(43, 23, 19, 0.08);
+  width: 230px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: searchExpand 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.header-search-bar:focus-within {
+  border-color: var(--brown);
+  box-shadow: 0 4px 16px rgba(67, 40, 35, 0.16), 0 0 0 3px rgba(67, 40, 35, 0.08);
+}
+.header-search-icon {
+  color: var(--muted);
+  font-size: 19px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.header-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13.5px;
+  color: var(--ink);
+  font-family: inherit;
+  width: 100%;
+  padding: 0;
+}
+.header-search-input::placeholder {
+  color: #a0938d;
+  font-size: 13px;
+}
+.header-search-close-btn {
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
+  border-radius: 50% !important;
+  background: #f1ece3 !important;
+  color: var(--muted) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  cursor: pointer;
+  border: none !important;
+  transition: all 0.15s ease !important;
+  flex-shrink: 0;
+}
+.header-search-close-btn:hover {
+  background: #e2dad0 !important;
+  color: var(--ink) !important;
+}
+.header-search-close-btn .material-symbols-outlined {
+  font-size: 14px !important;
+}
+@keyframes searchExpand {
+  from {
+    opacity: 0;
+    transform: scaleX(0.7);
+    width: 37px;
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+    width: 230px;
+  }
+}
+@media (max-width: 768px) {
+  .header-search-bar {
+    width: 170px;
+  }
 }
 .notification i {
   position: absolute;
   top: 7px;
   right: 7px;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #bd2b1d;
+  border: 1.5px solid #fbf7ef;
 }
 .cart-button {
-  display: flex;
+  width: auto !important;
+  min-width: 62px;
+  height: 37px !important;
+  display: inline-flex !important;
   align-items: center;
-  gap: 5px;
-  padding: 0 10px;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px !important;
   background: var(--sand) !important;
   border-radius: 22px !important;
-  font-size: 17px !important;
+  color: var(--brown) !important;
+}
+.cart-button .material-symbols-outlined {
+  font-size: 20px;
 }
 .cart-button b {
   display: grid;
   place-items: center;
-  width: 19px;
-  height: 19px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
   background: var(--brown);
   color: white;
-  border-radius: 50%;
+  border-radius: 10px;
   font-size: 11px;
+  font-weight: 700;
 }
 .avatar {
   display: grid;

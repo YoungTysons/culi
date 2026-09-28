@@ -98,6 +98,7 @@ model Order {
 model Product {
   id           Int              @id @default(autoincrement())
   name         String
+  category     String           @default("coffee")
   description  String?          @db.Text
   basePrice    Decimal          @db.Decimal(10, 2)
   image        String?
