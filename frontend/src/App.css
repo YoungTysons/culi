@@ -754,7 +754,7 @@ h3 {
   font-size: 10px;
   white-space: nowrap;
 }
-footer {
+footer.app-store-footer {
   padding: 42px max(28px, calc((100% - 1184px) / 2));
   display: grid;
   grid-template-columns: 2fr 1fr 1fr auto;
@@ -762,25 +762,25 @@ footer {
   background: var(--brown);
   color: #f7eee4;
 }
-footer strong {
+footer.app-store-footer strong {
   font:
     700 21px "Playfair Display",
     serif;
 }
-footer p,
-footer a,
-footer span {
+footer.app-store-footer p,
+footer.app-store-footer a,
+footer.app-store-footer span {
   display: block;
   color: #cdb9ad;
   font-size: 11px;
   line-height: 2;
 }
-footer b {
+footer.app-store-footer b {
   display: block;
   margin-bottom: 9px;
   font-size: 11px;
 }
-footer > small {
+footer.app-store-footer > small {
   align-self: end;
   color: #bca69a;
   font-size: 10px;
@@ -993,10 +993,10 @@ footer > small {
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  footer {
+  footer.app-store-footer {
     grid-template-columns: 1fr 1fr;
   }
-  footer > small {
+  footer.app-store-footer > small {
     grid-column: 1/-1;
   }
 }
@@ -1110,14 +1110,14 @@ footer > small {
   .coupon button {
     margin-left: 38px;
   }
-  footer {
+  footer.app-store-footer {
     display: block;
     padding: 38px 20px;
   }
-  footer > div {
+  footer.app-store-footer > div {
     margin-bottom: 22px;
   }
-  footer > small {
+  footer.app-store-footer > small {
     display: block;
   }
   .modal {

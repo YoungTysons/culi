@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer>
+    <footer className="app-store-footer">
       <div>
         <strong>Velvet & Brew</strong>
         <p>Cà phê và trà thủ công, giao tận nơi với tất cả sự chăm chút.</p>

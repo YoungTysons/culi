@@ -88,6 +88,11 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  // Cập nhật thông tin user trong state
+  const updateUser = (newData) => {
+    setUser((prev) => (prev ? { ...prev, ...newData } : newData));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -97,6 +102,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        updateUser,
       }}
     >
       {children}

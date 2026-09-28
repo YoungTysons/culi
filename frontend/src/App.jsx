@@ -17,6 +17,7 @@ import AuthModal from "./components/auth/AuthModal";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import CheckoutModal from "./components/checkout/CheckoutModal";
 import AdminDashboard from "./components/admin/AdminDashboard";
+import UserProfile from "./components/profile/UserProfile";
 
 function MainApp() {
   const { user, loading } = useAuth();
@@ -25,7 +26,9 @@ function MainApp() {
       ? "admin"
       : window.location.hash === "#checkout"
         ? "checkout"
-        : "store"
+        : window.location.hash === "#profile"
+          ? "profile"
+          : "store"
   );
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -108,6 +111,8 @@ function MainApp() {
         setCurrentView("admin");
       } else if (window.location.hash === "#checkout") {
         setCurrentView("checkout");
+      } else if (window.location.hash === "#profile") {
+        setCurrentView("profile");
       } else {
         setCurrentView("store");
       }
@@ -210,6 +215,26 @@ function MainApp() {
     );
   }
 
+  // 5. KHI CHUYỂN SANG GIAO DIỆN HỒ SƠ KHÁCH HÀNG (CUSTOMER PROFILE)
+  if (currentView === "profile") {
+    return (
+      <UserProfile
+        user={user}
+        onBackToStore={() => {
+          window.location.hash = "";
+          setCurrentView("store");
+        }}
+        onOpenCart={() => {
+          window.location.hash = "";
+          setCurrentView("store");
+          setDrawer(true);
+        }}
+        onOpenAuth={() => setAuthModalOpen(true)}
+        cartCount={cartCount}
+      />
+    );
+  }
+
   // 5. KHI Ở GIAO DIỆN MUA HÀNG (STOREFRONT)
   return (
     <div className="app-shell">
@@ -223,6 +248,11 @@ function MainApp() {
         onOpenAdmin={() => {
           window.location.hash = "admin";
           setCurrentView("admin");
+        }}
+        onOpenAuth={() => setAuthModalOpen(true)}
+        onOpenProfile={() => {
+          window.location.hash = "profile";
+          setCurrentView("profile");
         }}
       />
 

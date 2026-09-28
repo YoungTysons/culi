@@ -1,16 +1,17 @@
-const requireAdmin =(req,res,next)=>{
-    if(!req.user){
+const requireAdmin = (req, res, next) => {
+    if (!req.user) {
         return res.status(401).json({
             success: false,
-            massage: "vui long dang nhap"
+            message: "Vui lòng đăng nhập"
         });
     }
-    if(req.user!=="admin"){
+    const role = (req.user.role || "").toUpperCase();
+    if (role !== "ADMIN") {
         return res.status(403).json({
             success: false,
-            massage: "ban khong co quyen admin"
+            message: "Bạn không có quyền admin"
         });
     }
     next();
 };
-module.exports =requireAdmin;
+module.exports = requireAdmin;
