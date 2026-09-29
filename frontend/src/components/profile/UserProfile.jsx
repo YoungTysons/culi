@@ -53,6 +53,15 @@ export default function UserProfile({
   const [googleConnected, setGoogleConnected] = useState(true);
   const [appleConnected, setAppleConnected] = useState(false);
 
+  // States cho 2 khung Modal riêng biệt (Đổi SĐT & Đổi Email)
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [newPhoneInput, setNewPhoneInput] = useState("");
+
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [newEmailInput, setNewEmailInput] = useState("");
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   // Address list
   const [addresses, setAddresses] = useState([
     {
@@ -90,6 +99,20 @@ export default function UserProfile({
       if (user.avatar) setAvatar(user.avatar);
       if (user.gender) setGender(user.gender)
       if (user.nickname) setNickname(user.nickname)
+      if (user.address) {
+        setAddresses(user.address.map(addr => {
+          const fullAddress = [addr.street, addr.ward, addr.district, addr.city].filter(Boolean).join(', ');
+          return {
+            id: addr.id,
+            title: addr.addressLabel || addr.type,
+            tag: "",
+            isDefault: addr.isDefault || false,
+            address: fullAddress,
+            recipient: addr.recipientName,
+            phone: addr.recipientPhone,
+          }
+        }))
+      }
       setAddresses((prev) =>
         prev.map((addr) => ({
           ...addr,
@@ -175,7 +198,28 @@ export default function UserProfile({
     }
 
   };
-
+  const handleAddnewPhone = async () => {
+    const phone = newPhoneInput.trim();
+    if (!phone) {
+      alert("Vui lòng nhập số điện thoại hợp lệ");
+      return;
+    }
+    setShowPhoneModal(false);
+    if (updateUser) {
+      try {
+        const res = await updateUser({ phoneNumber: phone });
+        if (res.success) {
+          setPhoneNumber(phone);
+          setSaveSuccess(true);
+          setTimeout(() => setSaveSuccess(false), 2500);
+        } else {
+          alert(res.message || "Cập nhật số điện thoại thất bại");
+        }
+      } catch (error) {
+        alert("Đã xảy ra lỗi khi kết nối máy chủ");
+      }
+    }
+  };
   const handleReturnHome = () => {
     if (onBackToStore) onBackToStore();
     else window.location.hash = "";
@@ -1020,18 +1064,14 @@ export default function UserProfile({
                           </span>
                         </div>
                         <p className="font-body-sm text-[12px] text-on-surface-variant mt-1 m-0">
-                          Dùng để đăng nhập, nhận cuộc gọi của tài xế và nhận mã OTP giao
-                          dịch.
+                          Dùng để đăng nhập, nhận thông báo đơn hàng và liên hệ khi giao nhận.
                         </p>
                       </div>
                       <div>
                         <button
                           onClick={() => {
-                            const newPhone = prompt(
-                              "Nhập số điện thoại mới:",
-                              phoneNumber
-                            );
-                            if (newPhone) setPhoneNumber(newPhone);
+                            setNewPhoneInput(phoneNumber || "0912 345 678");
+                            setShowPhoneModal(true);
                           }}
                           className="px-space-md py-space-xs rounded-full bg-surface-container text-primary hover:bg-surface-container-high font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1 border-0 cursor-pointer"
                           type="button"
@@ -1068,8 +1108,10 @@ export default function UserProfile({
                       <div>
                         <button
                           onClick={() => {
-                            const newEmail = prompt("Nhập địa chỉ email mới:", email);
-                            if (newEmail) setEmail(newEmail);
+                            setNewEmailInput(email || "tri.nguyen@craftstudio.vn");
+                            setConfirmPasswordInput("");
+                            setShowPassword(false);
+                            setShowEmailModal(true);
                           }}
                           className="px-space-md py-space-xs rounded-full bg-surface-container text-primary hover:bg-surface-container-high font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1 border-0 cursor-pointer"
                           type="button"
@@ -1532,6 +1574,258 @@ export default function UserProfile({
           </div>
         </div>
       </footer>
+
+      {/* ================= KHUNG 1: MODAL THAY ĐỔI SỐ ĐIỆN THOẠI ================= */}
+      {showPhoneModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-margin-mobile md:p-space-xl bg-[#271310]/60 backdrop-blur-sm transition-all duration-300"
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowPhoneModal(false);
+          }}
+        >
+          <div className="relative w-full max-w-lg bg-surface-container-lowest rounded-2xl shadow-2xl border border-surface-container-high overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95">
+            {/* Header */}
+            <div className="flex items-center justify-between px-space-lg py-space-md border-b border-surface-container bg-surface-container-low">
+              <div className="flex items-center gap-space-xs">
+                <div className="w-9 h-9 rounded-full bg-primary-container text-[#ffdcc3] flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">phone_iphone</span>
+                </div>
+                <div>
+                  <h3 className="font-title-lg text-title-lg text-primary font-bold leading-tight m-0">
+                    Thay Đổi Số Điện Thoại
+                  </h3>
+                  <p className="font-body-sm text-[12px] text-on-surface-variant m-0">
+                    Cập nhật số điện thoại nhận thông báo và liên hệ giao nhận
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPhoneModal(false)}
+                className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
+                title="Đóng hộp thoại"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-space-lg overflow-y-auto flex flex-col gap-space-md">
+              {/* Số hiện tại */}
+              <div className="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant">
+                    Số điện thoại hiện tại
+                  </span>
+                  <span className="font-title-md text-title-md text-primary font-bold">
+                    {phoneNumber || "Chưa thiết lập"}
+                  </span>
+                </div>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-[11px] font-semibold">
+                  <span className="material-symbols-outlined text-[13px]">check_circle</span>
+                  Đang kích hoạt
+                </span>
+              </div>
+
+              {/* Ô nhập số mới */}
+              <div className="flex flex-col gap-space-2xs">
+                <label className="font-label-md text-label-md text-primary font-semibold">
+                  Số điện thoại mới <span className="text-error">*</span>
+                </label>
+                <div className="flex rounded-lg overflow-hidden border border-outline-variant focus-within:border-primary-container focus-within:shadow-[0_0_0_2px_#3e2723] bg-surface-container-low">
+                  <div className="flex items-center gap-1 px-space-sm bg-surface-container text-on-surface-variant font-label-md text-label-md border-r border-outline-variant shrink-0">
+                    <span className="text-[14px]">🇻🇳</span>
+                    <span className="font-bold">+84</span>
+                  </div>
+                  <input
+                    className="w-full px-space-md py-space-xs bg-transparent text-on-surface font-body-md text-body-md outline-none border-0"
+                    type="tel"
+                    placeholder="09xx xxx xxx"
+                    value={newPhoneInput}
+                    onChange={(e) => setNewPhoneInput(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Hộp thông tin ghi chú */}
+              <div className="p-space-xs rounded-lg bg-surface-container-low border border-outline-variant/60 flex items-start gap-space-xs">
+                <span className="material-symbols-outlined text-[18px] text-on-tertiary-container shrink-0 mt-0.5">
+                  phone_in_talk
+                </span>
+                <p className="font-body-sm text-[11px] text-on-surface-variant leading-relaxed m-0">
+                  Số điện thoại mới sẽ được dùng để đăng nhập, nhận thông báo đơn hàng và hỗ trợ tài xế liên hệ khi giao hàng.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between px-space-lg py-space-md border-t border-surface-container bg-surface-container-low">
+              <button
+                onClick={() => setShowPhoneModal(false)}
+                className="px-space-md py-space-xs rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
+                type="button"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                onClick={handleAddnewPhone}
+                className="px-space-lg py-space-xs rounded-full bg-primary-container text-on-primary font-label-md text-label-md font-semibold hover:bg-tertiary-container shadow-sm flex items-center gap-1 transition-all border-0 cursor-pointer"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[16px] text-[#ffdcc3]">
+                  check_circle
+                </span>
+                <span>Lưu Số Điện Thoại Mới</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= KHUNG 2: MODAL CẬP NHẬT EMAIL ================= */}
+      {showEmailModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-margin-mobile md:p-space-xl bg-[#271310]/60 backdrop-blur-sm transition-all duration-300"
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowEmailModal(false);
+          }}
+        >
+          <div className="relative w-full max-w-lg bg-surface-container-lowest rounded-2xl shadow-2xl border border-surface-container-high overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95">
+            {/* Header */}
+            <div className="flex items-center justify-between px-space-lg py-space-md border-b border-surface-container bg-surface-container-low">
+              <div className="flex items-center gap-space-xs">
+                <div className="w-9 h-9 rounded-full bg-primary-container text-[#ffdcc3] flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">mail</span>
+                </div>
+                <div>
+                  <h3 className="font-title-lg text-title-lg text-primary font-bold leading-tight m-0">
+                    Cập Nhật Email Liên Kết
+                  </h3>
+                  <p className="font-body-sm text-[12px] text-on-surface-variant m-0">
+                    Xác thực hòm thư điện tử để nhận hóa đơn và thông báo ưu đãi
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowEmailModal(false)}
+                className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
+                title="Đóng hộp thoại"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-space-lg overflow-y-auto flex flex-col gap-space-md">
+              {/* Email hiện tại */}
+              <div className="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant">
+                    Email liên kết hiện tại
+                  </span>
+                  <span className="font-title-md text-title-md text-primary font-bold truncate max-w-[240px]">
+                    {email || "Chưa có email"}
+                  </span>
+                </div>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-[11px] font-semibold shrink-0">
+                  <span className="material-symbols-outlined text-[13px]">verified</span>
+                  Đã xác minh
+                </span>
+              </div>
+
+              {/* Ô nhập Email mới */}
+              <div className="flex flex-col gap-space-2xs">
+                <label className="font-label-md text-label-md text-primary font-semibold">
+                  Địa chỉ Email mới <span className="text-error">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    className="w-full px-space-md py-space-xs pr-10 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:border-primary outline-none transition-all"
+                    type="email"
+                    placeholder="vidu@domain.com"
+                    value={newEmailInput}
+                    onChange={(e) => setNewEmailInput(e.target.value)}
+                  />
+                  <span className="material-symbols-outlined absolute right-3 top-2.5 text-[20px] text-outline pointer-events-none">
+                    mail
+                  </span>
+                </div>
+              </div>
+
+              {/* Ô xác nhận mật khẩu */}
+              <div className="flex flex-col gap-space-2xs">
+                <div className="flex items-center justify-between">
+                  <label className="font-label-md text-label-md text-primary font-semibold">
+                    Mật khẩu tài khoản hiện tại <span className="text-error">*</span>
+                  </label>
+                  <span className="font-label-sm text-[11px] text-on-surface-variant">
+                    Xác thực bảo vệ tài khoản
+                  </span>
+                </div>
+                <div className="relative">
+                  <input
+                    className="w-full px-space-md py-space-xs pr-10 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:border-primary outline-none transition-all"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Nhập mật khẩu hiện tại..."
+                    value={confirmPasswordInput}
+                    onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                  />
+                  <button
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-2.5 text-outline hover:text-primary transition-colors bg-transparent border-0 cursor-pointer p-0"
+                    type="button"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">
+                      {showPassword ? "visibility_off" : "visibility"}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Hộp ghi chú */}
+              <div className="p-space-xs rounded-lg bg-surface-container-low border border-outline-variant/60 flex items-start gap-space-xs">
+                <span className="material-symbols-outlined text-[18px] text-on-tertiary-container shrink-0 mt-0.5">
+                  receipt_long
+                </span>
+                <p className="font-body-sm text-[11px] text-on-surface-variant leading-relaxed m-0">
+                  Email này sẽ nhận hóa đơn điện tử VAT, thông báo ưu đãi độc quyền hội viên và mã QR đổi quà tích điểm từ hệ thống Velvet &amp; Brew.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between px-space-lg py-space-md border-t border-surface-container bg-surface-container-low">
+              <button
+                onClick={() => setShowEmailModal(false)}
+                className="px-space-md py-space-xs rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
+                type="button"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                onClick={() => {
+                  if (newEmailInput.trim()) {
+                    setEmail(newEmailInput.trim());
+                  }
+                  setShowEmailModal(false);
+                }}
+                className="px-space-lg py-space-xs rounded-full bg-primary-container text-on-primary font-label-md text-label-md font-semibold hover:bg-tertiary-container shadow-sm flex items-center gap-1 transition-all border-0 cursor-pointer"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[16px] text-[#ffdcc3]">
+                  send
+                </span>
+                <span>Xác nhận &amp; Cập nhật Email</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

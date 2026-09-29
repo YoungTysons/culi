@@ -156,6 +156,11 @@ const getProfile = async (req, res) => {
         email: true,
         avatar: true,
         role: true,
+        nickname:true,
+        addresses:{
+          orderBy: {isDefault :'desc'}
+        },
+      
         createdAt: true,
       },
     });
