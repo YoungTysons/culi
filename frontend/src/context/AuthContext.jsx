@@ -89,8 +89,23 @@ export function AuthProvider({ children }) {
   };
 
   // Cập nhật thông tin user trong state
-  const updateUser = (newData) => {
-    setUser((prev) => (prev ? { ...prev, ...newData } : newData));
+  const updateUser = async (newData) => {
+    try {
+      const res = await authApi.updateProfile(newData);
+      if (res && res.success) {
+        const updated = res.user || newData;
+        setUser((prev) => (prev ? { ...prev, ...updated } : updated)); // ✅ Thêm ngoặc tròn bọc ngoài
+
+        return { success: true, message: res.message }
+      }
+      return { success: false, message: res.message || "Không thể cập nhật profile" }
+    } catch (error) {
+      const msg =
+        error.response?.data?.message ||
+        error.message ||
+        "Không thể kết nối đến máy chủ"
+      return { success: false, message: msg }
+    }
   };
 
   return (

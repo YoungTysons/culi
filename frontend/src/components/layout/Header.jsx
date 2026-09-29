@@ -99,15 +99,40 @@ export default function Header({
   ];
 
   // Lấy 2 chữ cái viết tắt của họ tên
-  const initials = user?.fullName
+  // Lấy chữ cái dự phòng từ họ tên thật
+  const fallbackInitials = user?.fullName
     ? user.fullName
-        .trim()
-        .split(" ")
-        .map((n) => n[0])
-        .slice(-2)
-        .join("")
-        .toUpperCase()
+      .trim()
+      .split(" ")
+      .map((n) => n[0])
+      .slice(-2)
+      .join("")
+      .toUpperCase()
     : "VB";
+
+  // Hàm render Avatar dùng chung cho cả nút Header và Popup
+  const renderAvatar = (size = 36) => {
+    if (user?.avatar) {
+      return (
+        <img
+          src={user.avatar}
+          alt={user.fullName || "Avatar"}
+          style={{
+            width: `${size}px`,
+            height: `${size}px`,
+            borderRadius: "50%",
+            objectFit: "cover",
+            display: "block",
+          }}
+          onError={(e) => {
+            // Nếu link ảnh Cloudinary bị lỗi thì ẩn ảnh đi để lộ chữ viết tắt
+            e.target.style.display = "none";
+          }}
+        />
+      );
+    }
+    return fallbackInitials;
+  };
 
   return (
     <header>
@@ -252,7 +277,20 @@ export default function Header({
                   alignItems: "center",
                 }}
               >
-                <span className="avatar">{initials}</span>
+                <span
+                  className="avatar"
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {renderAvatar(36)}
+                </span>
               </button>
 
               {menuOpen && (

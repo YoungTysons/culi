@@ -25,10 +25,10 @@ model User {
   fullName    String
   avatar      String?
   role        Role      @default(CUSTOMER)
-
+  gender String? @db.VarChar(10)
   addresses   Address[]
   orders      Order[]
-
+  nickname    String?  @db.VarChar(50)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -46,7 +46,7 @@ model Address {
   district     String?  // Quận / Huyện
   city         String   // Tỉnh / Thành phố
   isDefault    Boolean  @default(false)
-
+  
   orders       Order[]
 }
 

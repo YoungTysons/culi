@@ -7,10 +7,31 @@ export default function UserProfile({
   onBackToStore,
   onOpenCart,
   onOpenAuth,
+  onOpenAdmin,
   cartCount = 0,
 }) {
   const { user: authUser, loading, logout, updateUser } = useAuth();
   const user = propUser !== undefined ? propUser : authUser;
+  const isAdmin = !!(user && (user.role || "").toUpperCase() === "ADMIN");
+
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+
+
+      }
+    };
+    if (userMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [userMenuOpen]);
 
   // Active navigation tab
   const [activeTab, setActiveTab] = useState("profile"); // "profile" | "addresses" | "orders" | "vouchers" | "cards" | "security" | "notifications"
@@ -18,12 +39,12 @@ export default function UserProfile({
   // Form states - Basic Info
   const [fullName, setFullName] = useState(user?.fullName || "");
   const [nickname, setNickname] = useState(
-    user?.fullName ? user.fullName.split(" ").slice(-1)[0] : ""
+    user?.nickname || user?.fullName ? user.fullName.split(" ").slice(-1)[0] : ""
   );
-  const [gender, setGender] = useState("male");
+  const [gender, setGender] = useState(user?.gender || "male");
   const [avatar, setAvatar] = useState(
     user?.avatar ||
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCyFwqFEv3j-svlANanu4HpwcENRviOlSiDYLYuPtyGA7IOJ_SV2MBnCcGqlF7HLqFJqD7ebQXFVpRMn-G4RZaKnGdAMy9Ji8r0diYqqroq-QuU-xpHPjlI8bbVFG1UG9rhx8l-gMcumLQCgEfF9poZv14ZaZ5K1j-WzgG6WGGsTCWwVedS9BIBhTfHCycn6G30X0AtEmNbXUgLpabtcQ-QnV4sxB9Ycpw6etYUQe00P89EvFgaoti1aQ"
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuCyFwqFEv3j-svlANanu4HpwcENRviOlSiDYLYuPtyGA7IOJ_SV2MBnCcGqlF7HLqFJqD7ebQXFVpRMn-G4RZaKnGdAMy9Ji8r0diYqqroq-QuU-xpHPjlI8bbVFG1UG9rhx8l-gMcumLQCgEfF9poZv14ZaZ5K1j-WzgG6WGGsTCWwVedS9BIBhTfHCycn6G30X0AtEmNbXUgLpabtcQ-QnV4sxB9Ycpw6etYUQe00P89EvFgaoti1aQ"
   );
 
   // Contact States
@@ -67,6 +88,8 @@ export default function UserProfile({
       if (user.phoneNumber) setPhoneNumber(user.phoneNumber);
       if (user.email) setEmail(user.email);
       if (user.avatar) setAvatar(user.avatar);
+      if (user.gender) setGender(user.gender)
+      if (user.nickname) setNickname(user.nickname)
       setAddresses((prev) =>
         prev.map((addr) => ({
           ...addr,
@@ -131,16 +154,26 @@ export default function UserProfile({
   };
 
   // Save changes
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      setSaveSuccess(true);
-      if (updateUser) {
-        updateUser({ fullName, phoneNumber, email, avatar });
+    setIsSaving(false);
+    if (updateUser) {
+      try {
+        const res = await updateUser({ avatar, fullName, nickname, phoneNumber, email, gender });
+        if (res.success) {
+          setTimeout(() => setSaveSuccess(false), 2500);
+          setSaveSuccess(true);
+        } else {
+          setTimeout(() => setSaveSuccess(false), 2500);
+        }
       }
-      setTimeout(() => setSaveSuccess(false), 2500);
-    }, 800);
+      catch (error) {
+        alert("Đã xảy ra lỗi khi lưu thông tin");
+      } finally {
+        setIsSaving(false);
+      }
+    }
+
   };
 
   const handleReturnHome = () => {
@@ -333,16 +366,103 @@ export default function UserProfile({
                 {cartCount || 3}
               </span>
             </button>
-            <div className="flex items-center pl-space-xs">
-              <img
-                alt="Profile Avatar"
-                className="w-8 h-8 rounded-full object-cover shadow-[0_2px_6px_rgba(62,39,35,0.15)]"
-                src={avatar}
-                onError={(e) => {
-                  e.target.src =
-                    "https://lh3.googleusercontent.com/aida-public/AB6AXuAIuIQH4ntxcCHLQm_B4eLlcpsyZoY-ztnLLrUoHQvuvhcWVL697v9e1qYuXL24xfWixBCb4BcNpdyDf9rtZtY-m81_NLB_tSkCN2O1IlWOV_1ZFsHncKjfwk6Rjx50j_WXLwVKonSWBuo8pXE9BWiAxbzq36FemRBOkxiDC3Dx-jHU6-d9_-gq1JUgZipflE6h9X1FRZCv7yciMd_JqiGJ5n7ELAz5zdTP9mBzsgaFotLvcETCpMaqAA";
-                }}
-              />
+            <div className="relative flex items-center pl-space-xs" ref={userMenuRef}>
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen((prev) => !prev)}
+                title={`${user.fullName || "Tài khoản của bạn"} (Bấm để xem menu)`}
+                aria-expanded={userMenuOpen}
+                aria-haspopup="true"
+                className="w-9 h-9 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center justify-center shadow-[0_2px_8px_rgba(62,39,35,0.2)] border-2 border-primary/20 hover:border-primary-container hover:scale-105 active:scale-95 transition-all cursor-pointer p-0 overflow-hidden outline-none"
+              >
+                <img
+                  alt="Profile Avatar"
+                  className="w-full h-full object-cover"
+                  src={avatar}
+                  onError={(e) => {
+                    e.target.src =
+                      "https://lh3.googleusercontent.com/aida-public/AB6AXuAIuIQH4ntxcCHLQm_B4eLlcpsyZoY-ztnLLrUoHQvuvhcWVL697v9e1qYuXL24xfWixBCb4BcNpdyDf9rtZtY-m81_NLB_tSkCN2O1IlWOV_1ZFsHncKjfwk6Rjx50j_WXLwVKonSWBuo8pXE9BWiAxbzq36FemRBOkxiDC3Dx-jHU6-d9_-gq1JUgZipflE6h9X1FRZCv7yciMd_JqiGJ5n7ELAz5zdTP9mBzsgaFotLvcETCpMaqAA";
+                  }}
+                />
+              </button>
+
+              {userMenuOpen && (
+                <div
+                  className="absolute right-0 top-12 bg-white rounded-2xl shadow-[0_12px_36px_rgba(43,23,19,0.2),0_0_0_1px_rgba(211,195,192,0.4)] p-3 min-w-[240px] z-50 text-left"
+                  style={{
+                    animation: "menuDropdownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                  }}
+                >
+                  <div className="px-2 py-2 border-b border-[#f1ede6] mb-2">
+                    <div className="font-bold text-[#271310] text-[13.5px] truncate">
+                      {user.fullName || "Khách hàng Velvet"}
+                    </div>
+                    <div className="text-[11.5px] text-[#756762] truncate mt-0.5">
+                      {user.phoneNumber || user.email || "Hội viên Velvet Club"}
+                    </div>
+                    <div className="mt-2">
+                      <span
+                        className={`inline-block text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${isAdmin
+                          ? "bg-[#ffdcc3] text-[#6e3900]"
+                          : "bg-[#e6f4ea] text-[#137333]"
+                          }`}
+                      >
+                        {isAdmin ? "Quản trị viên (Admin)" : "Hội viên Velvet Club"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          if (onOpenAdmin) onOpenAdmin();
+                          else window.location.hash = "admin";
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-[12.5px] font-semibold text-[#271310] bg-[#f1ede6] hover:bg-[#e6e0d6] transition-colors flex items-center gap-2 border-0 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[17px] text-[#3e2723]">
+                          dashboard
+                        </span>
+                        <span>Trang Quản Trị (Admin)</span>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        handleReturnHome();
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl text-[12.5px] font-medium text-[#49454e] hover:bg-[#f1ede6] transition-colors flex items-center gap-2 border-0 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[17px] text-[#756762]">
+                        storefront
+                      </span>
+                      <span>Về trang chủ cửa hàng</span>
+                    </button>
+
+                    <div className="border-t border-[#f1ede6] my-1" />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        if (logout) logout();
+                        handleReturnHome();
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl text-[12.5px] font-semibold text-[#93000a] bg-[#ffdad6] hover:bg-[#ffcdd2] transition-colors flex items-center gap-2 border-0 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[17px]">
+                        logout
+                      </span>
+                      <span>Đăng xuất</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -128,6 +128,7 @@ const login = async (req, res) => {
       user: {
         id: user.id,
         fullName: user.fullName,
+        gender : user.gender,
         phoneNumber: user.phoneNumber,
         email: user.email,
         role: user.role,
@@ -150,6 +151,7 @@ const getProfile = async (req, res) => {
       select: {
         id: true,
         fullName: true,
+        gender :true,
         phoneNumber: true,
         email: true,
         avatar: true,
@@ -167,9 +169,50 @@ const getProfile = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+const updateProfile =async (req,res)=>{
+  try{
+    const{fullName,nickname,gender,email,phoneNumber,avatar}=req.body;
+    const userId= req.user.id;
+    const updateProfile =await prisma.user.update({
+      where:{id:userId},
+      data:{
+        fullName:fullName,
+        nickname:nickname,
+        gender:gender,
+        email:email,
+        phoneNumber:phoneNumber,
+        avatar:avatar
+      },
+      select:{
+        id: true,
+        fullName: true,
+        phoneNumber: true,
+        nickname:true,
+        email: true,
+        gender: true,
+        avatar: true,
+        role: true,
+        createdAt: true,
+      }
+    });
+    return res.status(200).json({
+      success: true,
+      message: "Cập nhật thông tin thành công",
+      user: updateProfile,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi hệ thống",
+      error: error.message,
+    });
+  }
+}
+
 
 module.exports = {
   register,
   login,
+  updateProfile,
   getProfile,
 };

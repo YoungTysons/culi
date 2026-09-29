@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useAuth } from "../../context/AuthContext";
 import logoIcon from "../../assets/logo-icon.png";
 import { money, amount } from "../../utils/format";
 
@@ -47,22 +48,65 @@ export default function CheckoutModal({
   onClose,
   onBackToStore,
   cart = [],
-  user,
+  user: propUser,
   onClearCart,
+  onOpenProfile,
+  onOpenAdmin,
+  onOpenAuth,
+  onOpenCart,
 }) {
+  const { user: authUser, logout } = useAuth();
+  const currentUser = propUser !== undefined && propUser !== null ? propUser : authUser;
+  const isAdmin = !!(currentUser && (currentUser.role || "").toUpperCase() === "ADMIN");
+
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    if (userMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [userMenuOpen]);
+
   // Trạng thái Phương thức nhận hàng: "delivery" (Giao tận nơi) hoặc "pickup" (Lấy tại quán)
   const [deliveryMethod, setDeliveryMethod] = useState("delivery");
 
   // Thông tin người nhận
   const [customerName, setCustomerName] = useState(
-    user?.fullName || "Nguyễn Minh Trí"
+    currentUser?.fullName || "Nguyễn Minh Trí"
   );
   const [customerPhone, setCustomerPhone] = useState(
-    user?.phoneNumber || "0903 888 234"
+    currentUser?.phoneNumber || "0903 888 234"
   );
   const [customerEmail, setCustomerEmail] = useState(
-    user?.email || "minhtri.design@velvetbrew.vn"
+    currentUser?.email || "minhtri.design@velvetbrew.vn"
   );
+
+  useEffect(() => {
+    if (currentUser?.fullName && customerName === "Nguyễn Minh Trí") {
+      setCustomerName(currentUser.fullName);
+    }
+    if (currentUser?.phoneNumber && customerPhone === "0903 888 234") {
+      setCustomerPhone(currentUser.phoneNumber);
+    }
+    if (currentUser?.email && customerEmail === "minhtri.design@velvetbrew.vn") {
+      setCustomerEmail(currentUser.email);
+    }
+  }, [currentUser]);
+
+  const initials = currentUser?.fullName
+    ? (currentUser.fullName.trim().split(/\s+/).length > 1
+        ? currentUser.fullName.trim().split(/\s+/).map((n) => n[0]).slice(-2).join("").toUpperCase()
+        : currentUser.fullName.trim().charAt(0).toUpperCase())
+    : "VB";
   const [city, setCity] = useState("HN");
   const [district, setDistrict] = useState("HK");
   const [streetAddress, setStreetAddress] = useState(
@@ -325,6 +369,8 @@ export default function CheckoutModal({
           <div className="flex items-center gap-space-xs md:gap-space-sm shrink-0">
             <button
               aria-label="Tìm kiếm"
+              onClick={handleReturnHome}
+              title="Tìm kiếm đồ uống (về cửa hàng)"
               className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors bg-transparent border-0 cursor-pointer"
               type="button"
             >
@@ -332,6 +378,7 @@ export default function CheckoutModal({
             </button>
             <button
               aria-label="Thông báo"
+              title="Thông báo đơn hàng"
               className="relative w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors bg-transparent border-0 cursor-pointer"
               type="button"
             >
@@ -340,7 +387,8 @@ export default function CheckoutModal({
             </button>
             <button
               aria-label="Giỏ hàng"
-              onClick={handleReturnHome}
+              onClick={onOpenCart || handleReturnHome}
+              title="Xem giỏ hàng"
               className="relative flex items-center gap-space-2xs bg-surface-container-low hover:bg-surface-container-high px-space-sm py-space-xs rounded-full transition-all text-on-surface border-0 cursor-pointer"
               type="button"
             >
@@ -351,11 +399,153 @@ export default function CheckoutModal({
                 {totalItemCount}
               </span>
             </button>
-            <div className="flex items-center pl-space-xs">
-              <span className="w-8 h-8 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center justify-center shadow-[0_2px_6px_rgba(62,39,35,0.15)]">
-                {user?.fullName ? user.fullName.charAt(0).toUpperCase() : "VB"}
-              </span>
-            </div>
+
+            {/* AVATAR VÀ DROPDOWN TÀI KHOẢN */}
+            {!currentUser ? (
+              <button
+                type="button"
+                onClick={onOpenAuth}
+                title="Đăng nhập tài khoản"
+                className="ml-1 px-3.5 py-1.5 rounded-full bg-primary text-on-primary font-semibold text-xs border-0 cursor-pointer shadow-sm hover:opacity-95 transition-all flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">login</span>
+                <span>Đăng nhập</span>
+              </button>
+            ) : (
+              <div className="relative flex items-center pl-space-xs" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((prev) => !prev)}
+                  title={`${currentUser.fullName || "Tài khoản"} (Bấm để xem menu tài khoản)`}
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="true"
+                  className="w-9 h-9 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center justify-center shadow-[0_2px_8px_rgba(62,39,35,0.2)] border-2 border-primary/20 hover:border-primary-container hover:scale-105 active:scale-95 transition-all cursor-pointer p-0 overflow-hidden outline-none"
+                >
+                  {currentUser.avatar ? (
+                    <img
+                      src={currentUser.avatar}
+                      alt={currentUser.fullName || "Avatar"}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        if (e.target.parentElement) {
+                          e.target.parentElement.innerText = initials;
+                        }
+                      }}
+                    />
+                  ) : (
+                    <span>{initials}</span>
+                  )}
+                </button>
+
+                {/* DROPDOWN MENU KHI BẤM VÀO AVATAR */}
+                {userMenuOpen && (
+                  <div
+                    className="absolute right-0 top-12 bg-white rounded-2xl shadow-[0_12px_36px_rgba(43,23,19,0.2),0_0_0_1px_rgba(211,195,192,0.4)] p-3 min-w-[240px] z-50 text-left"
+                    style={{
+                      animation: "menuDropdownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                    }}
+                  >
+                    {/* Header thông tin người dùng */}
+                    <div className="px-2 py-2 border-b border-[#f1ede6] mb-2">
+                      <div className="font-bold text-[#271310] text-[13.5px] truncate">
+                        {currentUser.fullName || "Khách hàng Velvet"}
+                      </div>
+                      <div className="text-[11.5px] text-[#756762] truncate mt-0.5">
+                        {currentUser.phoneNumber || currentUser.email || "Hội viên Velvet Club"}
+                      </div>
+                      <div className="mt-2">
+                        <span
+                          className={`inline-block text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${
+                            isAdmin
+                              ? "bg-[#ffdcc3] text-[#6e3900]"
+                              : "bg-[#e6f4ea] text-[#137333]"
+                          }`}
+                        >
+                          {isAdmin ? "Quản trị viên (Admin)" : "Hội viên Velvet Club"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Danh sách hành động */}
+                    <div className="flex flex-col gap-1">
+                      {/* Nút Trang Quản Trị - Nếu là Admin */}
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            if (onOpenAdmin) {
+                              onOpenAdmin();
+                            } else {
+                              window.location.hash = "admin";
+                            }
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl text-[12.5px] font-semibold text-[#271310] bg-[#f1ede6] hover:bg-[#e6e0d6] transition-colors flex items-center gap-2 border-0 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[17px] text-[#3e2723]">
+                            dashboard
+                          </span>
+                          <span>Trang Quản Trị (Admin)</span>
+                        </button>
+                      )}
+
+                      {/* Nút Thông tin khách hàng & Đơn mua */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          if (onOpenProfile) {
+                            onOpenProfile();
+                          } else {
+                            window.location.hash = "profile";
+                          }
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-[12.5px] font-semibold text-[#271310] bg-[#fdf9f2] hover:bg-[#f7efe3] border border-[#e6e2db] transition-colors flex items-center gap-2 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[17px] text-[#8a5100]">
+                          badge
+                        </span>
+                        <span>Thông tin khách hàng</span>
+                      </button>
+
+                      {/* Nút Quay lại cửa hàng */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          handleReturnHome();
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-[12.5px] font-medium text-[#49454e] hover:bg-[#f1ede6] transition-colors flex items-center gap-2 border-0 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[17px] text-[#756762]">
+                          storefront
+                        </span>
+                        <span>Về trang chủ cửa hàng</span>
+                      </button>
+
+                      <div className="border-t border-[#f1ede6] my-1" />
+
+                      {/* Nút Đăng xuất */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          if (logout) logout();
+                          handleReturnHome();
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-[12.5px] font-semibold text-[#93000a] bg-[#ffdad6] hover:bg-[#ffcdd2] transition-colors flex items-center gap-2 border-0 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[17px]">
+                          logout
+                        </span>
+                        <span>Đăng xuất</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </header>

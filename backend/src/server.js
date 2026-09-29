@@ -3,7 +3,8 @@ const cors = require("cors");
 const productRouter = require("./routes/productRouter");
 const userRoutes = require("./routes/userRoutes");
 const prisma = require("./config/db");
-
+const uploadRouter = require("./routes/uploadRoutes");
+require('dotenv').config();
 const app = express();
 const port = 8080;
 
@@ -11,11 +12,10 @@ const port = 8080;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 // Routes
 app.use("/api/product", productRouter);
 app.use("/api/auth", userRoutes);
-
+app.use("/api", uploadRouter)
 // Lắng nghe cổng (đặt ở cuối)
 app.listen(port, async () => {
     console.log(`Server is running on port ${port}`);

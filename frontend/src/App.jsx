@@ -192,46 +192,81 @@ function MainApp() {
   // 4. KHI CHUYỂN SANG GIAO DIỆN THANH TOÁN (CHECKOUT)
   if (currentView === "checkout" || checkoutOpen) {
     return (
-      <CheckoutModal
-        isOpen={true}
-        cart={cart}
-        user={user}
-        onClearCart={() => setCart([])}
-        onClose={() => {
-          setCheckoutOpen(false);
-          if (window.location.hash === "#checkout") {
-            window.location.hash = "";
-          }
-          setCurrentView("store");
-        }}
-        onBackToStore={() => {
-          setCheckoutOpen(false);
-          if (window.location.hash === "#checkout") {
-            window.location.hash = "";
-          }
-          setCurrentView("store");
-        }}
-      />
+      <>
+        <CheckoutModal
+          isOpen={true}
+          cart={cart}
+          user={user}
+          onClearCart={() => setCart([])}
+          onClose={() => {
+            setCheckoutOpen(false);
+            if (window.location.hash === "#checkout") {
+              window.location.hash = "";
+            }
+            setCurrentView("store");
+          }}
+          onBackToStore={() => {
+            setCheckoutOpen(false);
+            if (window.location.hash === "#checkout") {
+              window.location.hash = "";
+            }
+            setCurrentView("store");
+          }}
+          onOpenProfile={() => {
+            setCheckoutOpen(false);
+            window.location.hash = "profile";
+            setCurrentView("profile");
+          }}
+          onOpenAdmin={() => {
+            setCheckoutOpen(false);
+            window.location.hash = "admin";
+            setCurrentView("admin");
+          }}
+          onOpenAuth={() => setAuthModalOpen(true)}
+          onOpenCart={() => {
+            setCheckoutOpen(false);
+            if (window.location.hash === "#checkout") {
+              window.location.hash = "";
+            }
+            setCurrentView("store");
+            setDrawer(true);
+          }}
+        />
+        <AuthModal
+          isOpen={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
+        />
+      </>
     );
   }
 
   // 5. KHI CHUYỂN SANG GIAO DIỆN HỒ SƠ KHÁCH HÀNG (CUSTOMER PROFILE)
   if (currentView === "profile") {
     return (
-      <UserProfile
-        user={user}
-        onBackToStore={() => {
-          window.location.hash = "";
-          setCurrentView("store");
-        }}
-        onOpenCart={() => {
-          window.location.hash = "";
-          setCurrentView("store");
-          setDrawer(true);
-        }}
-        onOpenAuth={() => setAuthModalOpen(true)}
-        cartCount={cartCount}
-      />
+      <>
+        <UserProfile
+          user={user}
+          onBackToStore={() => {
+            window.location.hash = "";
+            setCurrentView("store");
+          }}
+          onOpenCart={() => {
+            window.location.hash = "";
+            setCurrentView("store");
+            setDrawer(true);
+          }}
+          onOpenAdmin={() => {
+            window.location.hash = "admin";
+            setCurrentView("admin");
+          }}
+          onOpenAuth={() => setAuthModalOpen(true)}
+          cartCount={cartCount}
+        />
+        <AuthModal
+          isOpen={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
+        />
+      </>
     );
   }
 
