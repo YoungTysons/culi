@@ -1,4 +1,4 @@
-const bcrypt = require("bcryptjs"); 
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const prisma = require("../config/db");
 
@@ -11,9 +11,9 @@ const register = async (req, res) => {
 
     // Kiểm tra các trường bắt buộc
     if (!fullName || !phoneNumber || !password) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Vui lòng điền đầy đủ họ tên, số điện thoại và mật khẩu" 
+        message: "Vui lòng điền đầy đủ họ tên, số điện thoại và mật khẩu"
       });
     }
 
@@ -30,8 +30,8 @@ const register = async (req, res) => {
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        message: existingUser.phoneNumber === phoneNumber 
-          ? "Số điện thoại này đã được đăng ký" 
+        message: existingUser.phoneNumber === phoneNumber
+          ? "Số điện thoại này đã được đăng ký"
           : "Email này đã được đăng ký",
       });
     }
@@ -80,9 +80,9 @@ const login = async (req, res) => {
     const loginIdentifier = account || email;
 
     if (!loginIdentifier || !password) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Vui lòng nhập tài khoản (SĐT/Email) và mật khẩu" 
+        message: "Vui lòng nhập tài khoản (SĐT/Email) và mật khẩu"
       });
     }
 
@@ -128,7 +128,7 @@ const login = async (req, res) => {
       user: {
         id: user.id,
         fullName: user.fullName,
-        gender : user.gender,
+        gender: user.gender,
         phoneNumber: user.phoneNumber,
         email: user.email,
         role: user.role,
@@ -151,16 +151,16 @@ const getProfile = async (req, res) => {
       select: {
         id: true,
         fullName: true,
-        gender :true,
+        gender: true,
         phoneNumber: true,
         email: true,
         avatar: true,
         role: true,
-        nickname:true,
-        addresses:{
-          orderBy: {isDefault :'desc'}
+        nickname: true,
+        addresses: {
+          orderBy: { isDefault: 'desc' }
         },
-      
+
         createdAt: true,
       },
     });
@@ -174,25 +174,25 @@ const getProfile = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
-const updateProfile =async (req,res)=>{
-  try{
-    const{fullName,nickname,gender,email,phoneNumber,avatar}=req.body;
-    const userId= req.user.id;
-    const updateProfile =await prisma.user.update({
-      where:{id:userId},
-      data:{
-        fullName:fullName,
-        nickname:nickname,
-        gender:gender,
-        email:email,
-        phoneNumber:phoneNumber,
-        avatar:avatar
+const updateProfile = async (req, res) => {
+  try {
+    const { fullName, nickname, gender, email, phoneNumber, avatar } = req.body;
+    const userId = req.user.id;
+    const updateProfile = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        fullName: fullName,
+        nickname: nickname,
+        gender: gender,
+        email: email,
+        phoneNumber: phoneNumber,
+        avatar: avatar
       },
-      select:{
+      select: {
         id: true,
         fullName: true,
         phoneNumber: true,
-        nickname:true,
+        nickname: true,
         email: true,
         gender: true,
         avatar: true,
@@ -213,11 +213,144 @@ const updateProfile =async (req,res)=>{
     });
   }
 }
+const googleLogin = async (req, res) => {
+  try {
+    const { email, fullName, avatar } = req.body;
+    let user = await prisma.user.findFirst({
+      where: { email: email },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        avatar: true,
+        role: true,
+        phoneNumber: true,
+        gender: true,
+        nickname: true,
+      }
+    })
 
+    if (!user) {
+      let randomPhone = "0123456789"
+
+      const hashedPassword = await bcrypt.hash("google_" + Date.now(), 10);
+      user = await prisma.user.create({
+        data: {
+          email: email,
+          fullName: fullName,
+          avatar: avatar,
+          role: "CUSTOMER",
+          phoneNumber: randomPhone,   // Phải là String và không trùng lặp
+          password: hashedPassword,
+        }
+      })
+    }
+    const payLoad = {
+      id: user.id,
+      role: user.role,
+    };
+
+    const token = jwt.sign(payLoad, JWT_SECRET, { expiresIn: "7d" });
+
+    // Trả về kết quả cho client
+    return res.status(200).json({
+      success: true,
+      message: "Đăng nhập thành công",
+      token,
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        gender: user.gender,
+        phoneNumber: user.phoneNumber,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi hệ thống",
+      error: error.message,
+    })
+  }
+
+}
+const getAddress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const addresses = await prisma.address.findMany({
+      where: {
+        userId: userId,
+      },
+      orderBy: {
+        isDefault: "desc", // Đưa địa chỉ mặc định lên đầu danh sách
+      },
+    });
+    return res.status(200).json({
+      success: true,
+      message: "Lấy địa chỉ thành công",
+      data: addresses,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi hệ thống",
+      error: error.message,
+    })
+  }
+}
+const createAddress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const {
+      recipientName, phoneNumber, city, district, ward, street, note, label, isDefault, } = req.body;
+    if (!recipientName || !phoneNumber || !city || !street) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng nhập đầy đủ các trường bắt buộc",
+      });
+    }
+    if (isDefault) {
+      await prisma.address.updateMany({
+        where: { userId: userId },
+        data: { isDefault: false },
+      });
+    }
+    const newAddress = await prisma.address.create({
+      data: {
+        userId,
+        recipientName,
+        phoneNumber,
+        city,
+        district,
+        ward,
+        street,
+        note,
+        label: label || "HOME",
+        isDefault: Boolean(isDefault),
+      }
+    })
+    return res.status(200).json({
+      success: true,
+      message: "Thêm địa chỉ thành công",
+      data: newAddress,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi hệ thống",
+      error: error.message,
+    })
+  }
+}
 
 module.exports = {
   register,
   login,
   updateProfile,
   getProfile,
+  googleLogin,
+  getAddress,
+  createAddress,
 };

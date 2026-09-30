@@ -107,7 +107,26 @@ export function AuthProvider({ children }) {
       return { success: false, message: msg }
     }
   };
+  const googleLogin = async (googleAccessToken) => {
+    try{
+      const res = await authApi.googleLogin(googleAccessToken);
+    if(res.success){
+      localStorage.setItem("token",res.token);
+       localStorage.setItem("loginMethod", "GOOGLE"); 
+       const googleUserData = { ...res.user, isGoogle: true };
+      setUser(googleUserData);
+      return{success:true,message:res.message}
+    }
+    return {success:false,message:res.message || "Google login failed"}
+    }catch(error){
+      const msg =
+        error.response?.data?.message ||
+        error.message ||
+        "Google login failed"
+      return { success: false, message: msg }
+    }
 
+  }
   return (
     <AuthContext.Provider
       value={{
@@ -117,6 +136,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        googleLogin,
         updateUser,
       }}
     >

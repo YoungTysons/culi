@@ -1,3 +1,4 @@
+
 import axiosClient from "./axiosClient";
 
 const authApi = {
@@ -13,6 +14,9 @@ const authApi = {
   updateProfile: async (data) => {
     return await axiosClient.put("/auth/profile", data);
   },
+  googleLogin: async(data)=>{
+    return await axiosClient.post("/auth/google",data);
+  }
 };
 
 export default authApi;

@@ -35,19 +35,27 @@ model User {
 
 // Địa chỉ nhận hàng (khách có thể lưu nhiều địa chỉ: Nhà, Công ty...)
 model Address {
-  id           Int      @id @default(autoincrement())
-  userId       Int
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  recipientName String  // Tên người nhận
-  phoneNumber  String   // SĐT nhận hàng
-  street       String   // Số nhà, tên đường
-  ward         String?  // Phường / Xã
-  district     String?  // Quận / Huyện
-  city         String   // Tỉnh / Thành phố
-  isDefault    Boolean  @default(false)
+  recipientName String   // Tên người nhận
+  phoneNumber   String   // SĐT nhận hàng
+  street        String   // Số nhà, tên đường, tòa nhà
+  ward          String?  // Phường / Xã
+  district      String?  // Quận / Huyện
+  city          String   // Tỉnh / Thành phố
   
-  orders       Order[]
+  // 2 trường bổ sung từ form:
+  note          String?  // Ghi chú giao hàng cho tài xế
+  label         String?  @default("HOME") // "HOME" (Nhà riêng), "OFFICE" (Văn phòng), "OTHER" (Khác)
+
+  isDefault     Boolean  @default(false)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orders        Order[]
 }
 
 // ==========================================

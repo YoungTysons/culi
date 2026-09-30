@@ -13,6 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Routes
+
 app.use("/api/product", productRouter);
 app.use("/api/auth", userRoutes);
 app.use("/api", uploadRouter)

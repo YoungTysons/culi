@@ -50,7 +50,10 @@ export default function UserProfile({
   // Contact States
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "");
   const [email, setEmail] = useState(user?.email || "");
-  const [googleConnected, setGoogleConnected] = useState(true);
+  const isGoogleAccount = Boolean(
+  user?.isGoogle || user?.avatar?.includes("googleusercontent.com")
+);
+  const [googleConnected, setGoogleConnected] = useState(isGoogleAccount);
   const [appleConnected, setAppleConnected] = useState(false);
 
   // States cho 2 khung Modal riêng biệt (Đổi SĐT & Đổi Email)
@@ -62,7 +65,19 @@ export default function UserProfile({
   const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Address list
+  // State cho Modal Thêm địa chỉ mới
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [newAddressData, setNewAddressData] = useState({
+    recipientName: "",
+    phoneNumber: "",
+    city: "Hà Nội",
+    district: "Thanh Xuân",
+    ward: "Khương Mai",
+    street: "",
+    deliveryNote: "",
+    tag: "office", // "home" | "office" | "other"
+    isDefault: false,
+  });
   const [addresses, setAddresses] = useState([
     {
       id: 1,
@@ -157,23 +172,69 @@ export default function UserProfile({
     setAddresses((prev) => prev.filter((addr) => addr.id !== id));
   };
 
-  // Add new address prompt
+  // Mở Modal Thêm địa chỉ mới
   const handleAddNewAddress = () => {
-    const newTitle = prompt("Nhập tên địa chỉ (vd: Nhà bà ngoại, Chi nhánh 2):");
-    if (!newTitle) return;
-    const newDetail = prompt("Nhập địa chỉ chi tiết:");
-    if (!newDetail) return;
+    setNewAddressData({
+      recipientName: fullName || user?.fullName || "Nguyễn Minh Trí",
+      phoneNumber: phoneNumber || user?.phoneNumber || "0903 888 234",
+      city: "Hà Nội",
+      district: "Thanh Xuân",
+      ward: "Khương Mai",
+      street: "",
+      deliveryNote: "",
+      tag: "office",
+      isDefault: addresses.length === 0,
+    });
+    setShowAddressModal(true);
+  };
+
+  // Lưu địa chỉ mới vào danh sách
+  const handleSaveNewAddress = (e) => {
+    if (e) e.preventDefault();
+    if (
+      !newAddressData.recipientName.trim() ||
+      !newAddressData.phoneNumber.trim() ||
+      !newAddressData.street.trim()
+    ) {
+      alert("Vui lòng điền đầy đủ họ tên người nhận, số điện thoại và địa chỉ chi tiết!");
+      return;
+    }
+
+    const fullAddr = `${newAddressData.street.trim()}, P. ${newAddressData.ward}, Q. ${newAddressData.district}, ${newAddressData.city}`;
+    const tagMap = {
+      home: "Nhà riêng",
+      office: "Văn phòng làm việc",
+      other: "Địa chỉ phụ",
+    };
 
     const newAddr = {
       id: Date.now(),
-      title: newTitle,
-      tag: "Địa chỉ phụ",
-      isDefault: false,
-      address: newDetail,
-      recipient: fullName,
-      phone: phoneNumber,
+      title:
+        newAddressData.tag === "home"
+          ? `Nhà riêng (${newAddressData.street.trim()})`
+          : newAddressData.tag === "office"
+            ? `Văn phòng (${newAddressData.street.trim()})`
+            : newAddressData.street.trim(),
+      tag: newAddressData.isDefault ? "Địa chỉ mặc định" : tagMap[newAddressData.tag] || "Địa chỉ phụ",
+      isDefault: newAddressData.isDefault,
+      address: fullAddr,
+      recipient: newAddressData.recipientName.trim(),
+      phone: newAddressData.phoneNumber.trim(),
     };
-    setAddresses((prev) => [...prev, newAddr]);
+
+    setAddresses((prev) => {
+      let updated = prev;
+      if (newAddressData.isDefault) {
+        updated = updated.map((a) => ({
+          ...a,
+          isDefault: false,
+          tag: a.tag === "Địa chỉ mặc định" ? "Địa chỉ phụ" : a.tag,
+        }));
+      }
+      return [...updated, newAddr];
+    });
+
+    setShowAddressModal(false);
   };
 
   // Save changes
@@ -187,6 +248,7 @@ export default function UserProfile({
           setTimeout(() => setSaveSuccess(false), 2500);
           setSaveSuccess(true);
         } else {
+
           setTimeout(() => setSaveSuccess(false), 2500);
         }
       }
@@ -1056,12 +1118,21 @@ export default function UserProfile({
                           <span className="font-title-md text-title-md text-primary font-bold tracking-wide">
                             {phoneNumber}
                           </span>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-[11px] font-semibold">
-                            <span className="material-symbols-outlined text-[12px]">
-                              check_circle
-                            </span>{" "}
-                            Đã xác thực OTP
-                          </span>
+                          {phoneNumber === "0123456789" ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-[11px] font-semibold">
+                              <span className="material-symbols-outlined text-[12px]">
+                                cancel
+                              </span>{" "}
+                              Chưa xác thực
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-[11px] font-semibold">
+                              <span className="material-symbols-outlined text-[12px]">
+                                check_circle
+                              </span>{" "}
+                              Đã xác thực
+                            </span>
+                          )}
                         </div>
                         <p className="font-body-sm text-[12px] text-on-surface-variant mt-1 m-0">
                           Dùng để đăng nhập, nhận thông báo đơn hàng và liên hệ khi giao nhận.
@@ -1126,94 +1197,7 @@ export default function UserProfile({
                   </div>
 
                   {/* Social / SSO Accounts */}
-                  <div className="flex flex-col gap-space-xs pt-space-xs">
-                    <span className="font-label-lg text-label-lg text-primary font-semibold">
-                      Tài khoản liên kết nhanh
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
-                      {/* Google */}
-                      <div className="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between">
-                        <div className="flex items-center gap-space-sm">
-                          <div className="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm">
-                            <svg className="w-4 h-4" viewBox="0 0 24 24">
-                              <path
-                                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
-                                fill="#4285F4"
-                              />
-                              <path
-                                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
-                                fill="#34A853"
-                              />
-                              <path
-                                d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-                                fill="#FBBC05"
-                              />
-                              <path
-                                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                                fill="#EA4335"
-                              />
-                            </svg>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="font-label-md text-label-md text-primary font-semibold">
-                              Tài khoản Google
-                            </span>
-                            <span className="font-body-sm text-[11px] text-secondary">
-                              {googleConnected
-                                ? "Đã liên kết (tri.design@...)"
-                                : "Chưa liên kết"}
-                            </span>
-                          </div>
-                        </div>
-                        {googleConnected ? (
-                          <button
-                            onClick={() => setGoogleConnected(false)}
-                            className="text-on-surface-variant hover:text-error font-label-sm text-label-sm underline bg-transparent border-0 cursor-pointer"
-                            type="button"
-                          >
-                            Gỡ
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => setGoogleConnected(true)}
-                            className="px-space-sm py-1 rounded-full bg-primary-container text-on-primary font-label-sm text-[12px] border-0 cursor-pointer"
-                            type="button"
-                          >
-                            Liên kết
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Apple ID */}
-                      <div className="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between">
-                        <div className="flex items-center gap-space-sm">
-                          <div className="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm">
-                            <svg
-                              className="w-4 h-4 fill-current text-primary"
-                              viewBox="0 0 170 170"
-                            >
-                              <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.08-7.74-7.98-12.16-14.7-6.2-9.41-11.1-20.2-14.7-32.39-3.6-12.18-5.4-23.75-5.4-34.72 0-14.93 3.65-27.42 10.96-37.47 7.3-10.05 16.73-15.18 28.27-15.4 4.58 0 9.87 1.25 15.86 3.75 5.99 2.5 10.15 3.79 12.49 3.87 1.84 0 6.27-1.39 13.28-4.17 7.02-2.77 12.98-3.95 17.88-3.52 14.15 1.13 25.14 6.78 32.96 16.94-12.63 7.68-18.73 18.23-18.3 31.64.32 10.42 4.29 19.14 11.91 26.17 7.62 7.03 16.63 11.05 27.03 12.06-2.3 7.32-5.4 14.54-9.3 21.66zM119.22 33.15c0-7.39 2.66-14.47 7.98-21.24 5.32-6.77 11.89-11.03 19.71-12.78.33 1.5.49 2.92.49 4.27 0 7.4-2.84 14.65-8.52 21.75-5.68 7.1-12.41 11.23-20.2 12.4-.33-1.42-.49-2.88-.49-4.4z" />
-                            </svg>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="font-label-md text-label-md text-primary font-semibold">
-                              Apple ID
-                            </span>
-                            <span className="font-body-sm text-[11px] text-on-surface-variant">
-                              {appleConnected ? "Đã liên kết" : "Chưa kích hoạt"}
-                            </span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => setAppleConnected(!appleConnected)}
-                          className="px-space-sm py-1 rounded-full bg-primary-container text-on-primary font-label-sm text-[12px] hover:bg-tertiary-container transition-colors border-0 cursor-pointer"
-                          type="button"
-                        >
-                          {appleConnected ? "Gỡ" : "Liên kết ngay"}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  
                 </div>
 
                 {/* CARD 3: SAVED DELIVERY ADDRESS BOOK */}
@@ -1822,6 +1806,347 @@ export default function UserProfile({
                 </span>
                 <span>Xác nhận &amp; Cập nhật Email</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= KHUNG 3: MODAL THÊM ĐỊA CHỈ GIAO HÀNG MỚI ================= */}
+      {showAddressModal && (
+        <div
+          id="add-address-modal"
+          className="fixed inset-0 z-50 flex items-center justify-center p-margin-mobile md:p-space-xl bg-[#271310]/60 backdrop-blur-sm transition-all duration-300"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="address-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAddressModal(false);
+          }}
+        >
+          <div className="relative w-full max-w-2xl bg-surface-container-lowest rounded-xl shadow-xl border border-surface-container-high overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95">
+            {/* Header Modal */}
+            <div className="flex items-center justify-between px-space-lg py-space-md border-b border-surface-container bg-surface-container-low">
+              <div className="flex items-center gap-space-xs">
+                <div className="w-9 h-9 rounded-full bg-primary-container text-[#ffdcc3] flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">
+                    add_location_alt
+                  </span>
+                </div>
+                <div>
+                  <h3
+                    id="address-modal-title"
+                    className="font-headline-sm text-headline-sm text-primary font-serif font-bold leading-tight m-0"
+                  >
+                    Thêm Địa Chỉ Giao Hàng Mới
+                  </h3>
+                  <p className="font-body-sm text-[12px] text-on-surface-variant m-0">
+                    Lưu thông tin giao hàng để đặt món nhanh chóng hơn tại Velvet &amp; Brew
+                  </p>
+                </div>
+              </div>
+              <button
+                id="close-address-modal-x"
+                onClick={() => setShowAddressModal(false)}
+                className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
+                title="Đóng hộp thoại"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            {/* Form Body */}
+            <form
+              id="add-address-form"
+              onSubmit={handleSaveNewAddress}
+              className="p-space-lg overflow-y-auto flex flex-col gap-space-md"
+            >
+              {/* Họ tên & SĐT */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+                <div className="flex flex-col gap-space-2xs">
+                  <label
+                    className="font-label-md text-label-md text-primary font-semibold"
+                    htmlFor="receiver-name"
+                  >
+                    Họ và tên người nhận <span className="text-error">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="receiver-name"
+                      required
+                      className="w-full px-space-md py-space-xs rounded-lg bg-surface-container-low border border-outline-variant text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:border-primary outline-none transition-all"
+                      type="text"
+                      placeholder="Nguyễn Minh Trí"
+                      value={newAddressData.recipientName}
+                      onChange={(e) =>
+                        setNewAddressData({ ...newAddressData, recipientName: e.target.value })
+                      }
+                    />
+                    <span className="material-symbols-outlined absolute right-3 top-2.5 text-[20px] text-outline pointer-events-none">
+                      person
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-space-2xs">
+                  <label
+                    className="font-label-md text-label-md text-primary font-semibold"
+                    htmlFor="receiver-phone"
+                  >
+                    Số điện thoại nhận hàng <span className="text-error">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="receiver-phone"
+                      required
+                      className="w-full px-space-md py-space-xs rounded-lg bg-surface-container-low border border-outline-variant text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:border-primary outline-none transition-all"
+                      type="tel"
+                      placeholder="090x xxx xxx"
+                      value={newAddressData.phoneNumber}
+                      onChange={(e) =>
+                        setNewAddressData({ ...newAddressData, phoneNumber: e.target.value })
+                      }
+                    />
+                    <span className="material-symbols-outlined absolute right-3 top-2.5 text-[20px] text-outline pointer-events-none">
+                      call
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tỉnh / Huyện / Xã */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-xs">
+                <div className="flex flex-col gap-space-2xs">
+                  <label
+                    className="font-label-md text-label-md text-primary font-semibold"
+                    htmlFor="select-city"
+                  >
+                    Tỉnh / Thành phố <span className="text-error">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="select-city"
+                      value={newAddressData.city}
+                      onChange={(e) =>
+                        setNewAddressData({ ...newAddressData, city: e.target.value })
+                      }
+                      className="w-full px-space-sm py-space-xs rounded-lg bg-surface-container-low border border-outline-variant text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:border-primary outline-none appearance-none cursor-pointer transition-all"
+                    >
+                      <option value="Hà Nội">Hà Nội</option>
+                      <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                      <option value="Đà Nẵng">Đà Nẵng</option>
+                      <option value="Hải Phòng">Hải Phòng</option>
+                    </select>
+                    <span className="material-symbols-outlined absolute right-2 top-2.5 text-[18px] text-outline pointer-events-none">
+                      expand_more
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-space-2xs">
+                  <label
+                    className="font-label-md text-label-md text-primary font-semibold"
+                    htmlFor="select-district"
+                  >
+                    Quận / Huyện <span className="text-error">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="select-district"
+                      value={newAddressData.district}
+                      onChange={(e) =>
+                        setNewAddressData({ ...newAddressData, district: e.target.value })
+                      }
+                      className="w-full px-space-sm py-space-xs rounded-lg bg-surface-container-low border border-outline-variant text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:border-primary outline-none appearance-none cursor-pointer transition-all"
+                    >
+                      <option value="Thanh Xuân">Thanh Xuân</option>
+                      <option value="Hoàn Kiếm">Hoàn Kiếm</option>
+                      <option value="Ba Đình">Ba Đình</option>
+                      <option value="Cầu Giấy">Cầu Giấy</option>
+                      <option value="Đống Đa">Đống Đa</option>
+                    </select>
+                    <span className="material-symbols-outlined absolute right-2 top-2.5 text-[18px] text-outline pointer-events-none">
+                      expand_more
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-space-2xs">
+                  <label
+                    className="font-label-md text-label-md text-primary font-semibold"
+                    htmlFor="select-ward"
+                  >
+                    Phường / Xã <span className="text-error">*</span>
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="select-ward"
+                      value={newAddressData.ward}
+                      onChange={(e) =>
+                        setNewAddressData({ ...newAddressData, ward: e.target.value })
+                      }
+                      className="w-full px-space-sm py-space-xs rounded-lg bg-surface-container-low border border-outline-variant text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:border-primary outline-none appearance-none cursor-pointer transition-all"
+                    >
+                      <option value="Khương Mai">Khương Mai</option>
+                      <option value="Hàng Bài">Hàng Bài</option>
+                      <option value="Tràng Tiền">Tràng Tiền</option>
+                      <option value="Lý Thái Tổ">Lý Thái Tổ</option>
+                    </select>
+                    <span className="material-symbols-outlined absolute right-2 top-2.5 text-[18px] text-outline pointer-events-none">
+                      expand_more
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Địa chỉ chi tiết */}
+              <div className="flex flex-col gap-space-2xs">
+                <label
+                  className="font-label-md text-label-md text-primary font-semibold"
+                  htmlFor="address-detail"
+                >
+                  Địa chỉ chi tiết / Số nhà, tên tòa nhà <span className="text-error">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    id="address-detail"
+                    required
+                    className="w-full px-space-md py-space-xs rounded-lg bg-surface-container-low border border-outline-variant text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:border-primary outline-none transition-all"
+                    type="text"
+                    placeholder="Ví dụ: Tầng 4, Tòa nhà Heritage, 48 Lý Thường Kiệt..."
+                    value={newAddressData.street}
+                    onChange={(e) =>
+                      setNewAddressData({ ...newAddressData, street: e.target.value })
+                    }
+                  />
+                  <span className="material-symbols-outlined absolute right-3 top-2.5 text-[20px] text-outline pointer-events-none">
+                    location_city
+                  </span>
+                </div>
+              </div>
+
+              {/* Ghi chú giao hàng */}
+              <div className="flex flex-col gap-space-2xs">
+                <label
+                  className="font-label-md text-label-md text-primary font-semibold"
+                  htmlFor="delivery-note"
+                >
+                  Ghi chú giao hàng cho tài xế
+                </label>
+                <textarea
+                  id="delivery-note"
+                  rows={2}
+                  className="w-full px-space-md py-space-xs rounded-lg bg-surface-container-low border border-outline-variant text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:border-primary outline-none transition-all resize-none"
+                  placeholder="Ví dụ: Gửi đồ tại quầy lễ tân sảnh B, gọi trước 5 phút khi đến..."
+                  value={newAddressData.deliveryNote}
+                  onChange={(e) =>
+                    setNewAddressData({ ...newAddressData, deliveryNote: e.target.value })
+                  }
+                />
+              </div>
+
+              {/* Phân loại / Nhãn */}
+              <div className="flex flex-col gap-space-2xs">
+                <span className="font-label-md text-label-md text-primary font-semibold">
+                  Phân loại / Nhãn địa chỉ
+                </span>
+                <div className="grid grid-cols-3 gap-space-xs">
+                  <label
+                    className={`flex items-center justify-center gap-1.5 p-space-xs rounded-lg border cursor-pointer transition-all font-label-md text-label-md ${newAddressData.tag === "home"
+                        ? "border-primary bg-primary-container text-on-primary shadow-sm"
+                        : "border-outline-variant/60 bg-surface-container-low text-on-surface-variant hover:border-primary"
+                      }`}
+                  >
+                    <input
+                      type="radio"
+                      name="address-tag"
+                      value="home"
+                      checked={newAddressData.tag === "home"}
+                      onChange={() => setNewAddressData({ ...newAddressData, tag: "home" })}
+                      className="sr-only"
+                    />
+                    <span className="material-symbols-outlined text-[18px]">home</span>
+                    <span>Nhà riêng</span>
+                  </label>
+                  <label
+                    className={`flex items-center justify-center gap-1.5 p-space-xs rounded-lg border cursor-pointer transition-all font-label-md text-label-md ${newAddressData.tag === "office"
+                        ? "border-primary bg-primary-container text-on-primary shadow-sm"
+                        : "border-outline-variant/60 bg-surface-container-low text-on-surface-variant hover:border-primary"
+                      }`}
+                  >
+                    <input
+                      type="radio"
+                      name="address-tag"
+                      value="office"
+                      checked={newAddressData.tag === "office"}
+                      onChange={() => setNewAddressData({ ...newAddressData, tag: "office" })}
+                      className="sr-only"
+                    />
+                    <span className="material-symbols-outlined text-[18px]">business</span>
+                    <span>Văn phòng</span>
+                  </label>
+                  <label
+                    className={`flex items-center justify-center gap-1.5 p-space-xs rounded-lg border cursor-pointer transition-all font-label-md text-label-md ${newAddressData.tag === "other"
+                        ? "border-primary bg-primary-container text-on-primary shadow-sm"
+                        : "border-outline-variant/60 bg-surface-container-low text-on-surface-variant hover:border-primary"
+                      }`}
+                  >
+                    <input
+                      type="radio"
+                      name="address-tag"
+                      value="other"
+                      checked={newAddressData.tag === "other"}
+                      onChange={() => setNewAddressData({ ...newAddressData, tag: "other" })}
+                      className="sr-only"
+                    />
+                    <span className="material-symbols-outlined text-[18px]">pin_drop</span>
+                    <span>Khác</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Đặt làm mặc định checkbox */}
+              <div className="pt-space-2xs border-t border-surface-container">
+                <label className="inline-flex items-center gap-space-xs cursor-pointer">
+                  <input
+                    id="is-default-address"
+                    type="checkbox"
+                    checked={newAddressData.isDefault}
+                    onChange={(e) =>
+                      setNewAddressData({ ...newAddressData, isDefault: e.target.checked })
+                    }
+                    className="w-4 h-4 rounded text-primary focus:ring-primary accent-[#3e2723]"
+                  />
+                  <span className="font-label-md text-label-md text-primary font-semibold">
+                    Đặt làm địa chỉ nhận hàng mặc định
+                  </span>
+                </label>
+                <p className="font-body-sm text-[12px] text-on-surface-variant pl-6 m-0">
+                  Đơn hàng trực tuyến tiếp theo sẽ tự động chọn giao tới địa chỉ này.
+                </p>
+              </div>
+            </form>
+
+            {/* Footer Modal */}
+            <div className="flex items-center justify-between px-space-lg py-space-md border-t border-surface-container bg-surface-container-low">
+              <button
+                id="btn-cancel-address"
+                onClick={() => setShowAddressModal(false)}
+                className="px-space-md py-space-xs rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
+                type="button"
+              >
+                Hủy bỏ
+              </button>
+              <div className="flex items-center gap-space-xs">
+                <button
+                  id="btn-save-address"
+                  onClick={handleSaveNewAddress}
+                  className="px-space-xl py-space-xs rounded-full bg-primary-container text-on-primary font-label-md text-label-md font-semibold hover:bg-tertiary-container shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-1.5 border-0 cursor-pointer"
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-[#ffdcc3]">
+                    check_circle
+                  </span>
+                  <span>Lưu Địa Chỉ</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
