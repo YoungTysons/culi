@@ -14,6 +14,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@payos/node": "^2.0.5",
     "@prisma/client": "5.22.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.11.0",

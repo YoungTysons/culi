@@ -2,6 +2,9 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import logoIcon from "../../assets/logo-icon.png";
 import { money, amount } from "../../utils/format";
+import orderApi from "../../api/orderApi";
+import axiosClient from "../../api/axiosClient";
+
 
 // Dữ liệu mẫu đồ uống chuẩn bị thanh toán khi giỏ hàng trống (fallback)
 const DEFAULT_SAMPLE_ITEMS = [
@@ -100,21 +103,29 @@ export default function CheckoutModal({
     if (currentUser?.email && customerEmail === "minhtri.design@velvetbrew.vn") {
       setCustomerEmail(currentUser.email);
     }
+    // Tự động nạp địa chỉ mặc định từ tài khoản nếu người dùng đã lưu địa chỉ
+    if (currentUser?.addresses && currentUser.addresses.length > 0) {
+      const defaultAddr = currentUser.addresses.find((a) => a.isDefault) || currentUser.addresses[0];
+      if (defaultAddr) {
+        if (defaultAddr.street) setStreetAddress(defaultAddr.street);
+        if (defaultAddr.district) setDistrict(defaultAddr.district);
+        if (defaultAddr.city) setCity(defaultAddr.city);
+        if (defaultAddr.recipientName) setCustomerName(defaultAddr.recipientName);
+        if (defaultAddr.phoneNumber) setCustomerPhone(defaultAddr.phoneNumber);
+        if (defaultAddr.note) setDeliveryNotes(defaultAddr.note);
+      }
+    }
   }, [currentUser]);
 
   const initials = currentUser?.fullName
     ? (currentUser.fullName.trim().split(/\s+/).length > 1
-        ? currentUser.fullName.trim().split(/\s+/).map((n) => n[0]).slice(-2).join("").toUpperCase()
-        : currentUser.fullName.trim().charAt(0).toUpperCase())
+      ? currentUser.fullName.trim().split(/\s+/).map((n) => n[0]).slice(-2).join("").toUpperCase()
+      : currentUser.fullName.trim().charAt(0).toUpperCase())
     : "VB";
   const [city, setCity] = useState("HN");
   const [district, setDistrict] = useState("HK");
-  const [streetAddress, setStreetAddress] = useState(
-    "Tầng 5, Tòa Nhà Artemis Plaza, 03 Lê Trọng Tấn, Khương Mai"
-  );
-  const [deliveryNotes, setDeliveryNotes] = useState(
-    "Giao lên sảnh văn phòng lầu 5, gọi trước 5 phút em xuống lấy ạ."
-  );
+  const [streetAddress, setStreetAddress] = useState("");
+  const [deliveryNotes, setDeliveryNotes] = useState("");
   const [deliveryTiming, setDeliveryTiming] = useState("now"); // "now" | "scheduled"
 
   // Tùy chọn Sống xanh & Hóa đơn VAT
@@ -123,16 +134,17 @@ export default function CheckoutModal({
   const [vatCompany, setVatCompany] = useState("");
   const [vatTaxCode, setVatTaxCode] = useState("");
   const [vatAddress, setVatAddress] = useState("");
+  const [payosCheckoutUrl, setPayosCheckoutUrl] = useState("");
+  const [payosQrCode, setPayosQrCode] = useState("");
+  const [payosOrderCode, setPayosOrderCode] = useState(null);
+
 
   // Phương thức thanh toán: "vietqr" | "card" | "wallet" | "cod"
   const [paymentMethod, setPaymentMethod] = useState("vietqr");
 
   // Mã giảm giá / Ưu đãi
-  const [couponCode, setCouponCode] = useState("VELVETNEW");
-  const [appliedCoupons, setAppliedCoupons] = useState([
-    { code: "VELVETNEW", discount: 20000, label: "VELVETNEW (-20.000đ)" },
-    { code: "FREESHIP", discount: 25000, label: "FREESHIP (Giảm 25.000đ)" },
-  ]);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupons, setAppliedCoupons] = useState([]);
   const [couponMessage, setCouponMessage] = useState("");
 
   // Trạng thái sau khi bấm "Đặt hàng"
@@ -151,6 +163,29 @@ export default function CheckoutModal({
     }
     return () => clearInterval(timer);
   }, [showQRModal, qrCountdown]);
+
+  // Polling tự động kiểm tra trạng thái thanh toán từ PayOS mỗi 2 giây
+  useEffect(() => {
+    let pollTimer;
+    if (showQRModal && payosOrderCode) {
+      pollTimer = setInterval(async () => {
+        try {
+          const res = await axiosClient.get(`/payment/order-status/${payosOrderCode}`);
+          if (res && (res.status === "PAID" || res.isPaid)) {
+            clearInterval(pollTimer);
+            setShowQRModal(false);
+            setOrderSuccess(true);
+            if (onClearCart) onClearCart();
+          }
+        } catch {
+          // Bỏ qua lỗi polling tạm thời khi chưa thanh toán
+        }
+      }, 2000);
+    }
+    return () => {
+      if (pollTimer) clearInterval(pollTimer);
+    };
+  }, [showQRModal, payosOrderCode, onClearCart]);
 
   const formatTimer = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -249,31 +284,68 @@ export default function CheckoutModal({
   };
 
   // Xử lý bấm Đặt Hàng & Thanh Toán
-  const handlePlaceOrder = () => {
-    if (!customerName.trim() || !customerPhone.trim()) {
-      alert("Vui lòng điền họ tên và số điện thoại người nhận!");
+  const handlePlaceOrder = async () => {
+    if (!customerName || !customerName.trim() || !customerPhone || !customerPhone.trim()) {
+      alert("⚠️ Vui lòng điền đầy đủ họ tên và số điện thoại người nhận!");
       return;
     }
 
-    if (deliveryMethod === "delivery" && !streetAddress.trim()) {
-      alert("Vui lòng điền số nhà và tên đường nhận hàng!");
-      return;
+    if (deliveryMethod === "delivery") {
+      if (!streetAddress || !streetAddress.trim()) {
+        alert("⚠️ Bạn chưa có hoặc chưa điền địa chỉ nhận hàng!\nVui lòng chọn từ sổ địa chỉ hoặc nhập số nhà, tên đường nhận hàng.");
+        return;
+      }
     }
 
     setOrderProcessing(true);
 
-    const generatedCode = `#VB-${Math.floor(1000 + Math.random() * 9000)}`;
-    setCreatedOrderCode(generatedCode);
-
-    setTimeout(() => {
-      setOrderProcessing(false);
-      if (paymentMethod === "vietqr") {
-        setShowQRModal(true);
-      } else {
-        setOrderSuccess(true);
-        if (onClearCart) onClearCart();
+    try {
+      // 2. Chuẩn bị payload gửi lên Backend
+      const orderPayload = {
+        userId: currentUser?.id || null,
+        shippingAddress:
+          deliveryMethod === "delivery"
+            ? `${streetAddress}, ${district}, ${city}`
+            : "Nhận tại quầy cửa hàng",
+        subtotal: subtotal,
+        shippingFee: baseShippingFee - shippingDiscount,
+        totalAmount: grandTotal,
+        paymentMethod: paymentMethod, // "vietqr" | "cod" | "card" | "wallet"
+        note: deliveryNotes || "",
+        items: displayItems.map((item) => ({
+          productId: item.id && !isNaN(item.id) ? Number(item.id) : 1, // Fallback ID sản phẩm
+          quantity: item.quantity || 1,
+          sizeName: item.size || "Size M",
+          sizePrice: 0,
+          sweetness: item.note || "Chuẩn vị",
+          ice: "Chuẩn đá",
+          unitPrice: item.unitPrice || 50000,
+        })),
+      };
+      const response = await orderApi.createOrder(orderPayload);
+      if (response && response.success) {
+        setCreatedOrderCode(response.order.orderCode);
+        // Nếu chọn VietQR / PayOS và backend trả về link/mã QR
+        if (paymentMethod === "vietqr" && response.payos) {
+          setPayosCheckoutUrl(response.payos.checkoutUrl);
+          setPayosQrCode(response.payos.qrCode);
+          setPayosOrderCode(response.payos.orderCode);
+          setShowQRModal(true); // Mở popup QR
+        } else {
+          // Nếu là COD hoặc phương thức khác: Hoàn tất đơn ngay
+          setOrderSuccess(true);
+          if (onClearCart) onClearCart(); // Xóa sạch giỏ hàng
+        }
       }
-    }, 800);
+    } catch (err) {
+      console.error("Lỗi khi đặt hàng:", err);
+      alert(err.response?.data?.message || "Có lỗi xảy ra khi tạo đơn hàng!");
+    } finally {
+      setOrderProcessing(false);
+    }
+
+
+
   };
 
   const handleCompleteVietQRPayment = () => {
@@ -456,11 +528,10 @@ export default function CheckoutModal({
                       </div>
                       <div className="mt-2">
                         <span
-                          className={`inline-block text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${
-                            isAdmin
-                              ? "bg-[#ffdcc3] text-[#6e3900]"
-                              : "bg-[#e6f4ea] text-[#137333]"
-                          }`}
+                          className={`inline-block text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${isAdmin
+                            ? "bg-[#ffdcc3] text-[#6e3900]"
+                            : "bg-[#e6f4ea] text-[#137333]"
+                            }`}
                         >
                           {isAdmin ? "Quản trị viên (Admin)" : "Hội viên Velvet Club"}
                         </span>
@@ -595,16 +666,14 @@ export default function CheckoutModal({
                 </div>
                 <span className="text-outline-variant text-[12px]">• • •</span>
                 <div
-                  className={`flex items-center gap-space-2xs font-label-sm text-label-sm ${
-                    orderSuccess ? "text-secondary font-bold" : "text-outline"
-                  }`}
+                  className={`flex items-center gap-space-2xs font-label-sm text-label-sm ${orderSuccess ? "text-secondary font-bold" : "text-outline"
+                    }`}
                 >
                   <span
-                    className={`w-5 h-5 rounded-full flex items-center justify-center font-medium ${
-                      orderSuccess
-                        ? "bg-secondary-container text-on-secondary-container"
-                        : "bg-surface-container-high text-on-surface-variant"
-                    }`}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center font-medium ${orderSuccess
+                      ? "bg-secondary-container text-on-secondary-container"
+                      : "bg-surface-container-high text-on-surface-variant"
+                      }`}
                   >
                     {orderSuccess ? "✓" : "3"}
                   </span>
@@ -665,11 +734,10 @@ export default function CheckoutModal({
                   {/* Switchable Tabs */}
                   <div className="grid grid-cols-2 gap-space-xs bg-surface-container-low p-space-2xs rounded-full">
                     <button
-                      className={`flex items-center justify-center gap-space-xs py-space-xs px-space-md rounded-full font-label-lg text-label-lg transition-all border-0 cursor-pointer ${
-                        deliveryMethod === "delivery"
-                          ? "bg-primary-container text-on-primary shadow-sm"
-                          : "text-on-surface-variant hover:text-on-surface bg-transparent"
-                      }`}
+                      className={`flex items-center justify-center gap-space-xs py-space-xs px-space-md rounded-full font-label-lg text-label-lg transition-all border-0 cursor-pointer ${deliveryMethod === "delivery"
+                        ? "bg-primary-container text-on-primary shadow-sm"
+                        : "text-on-surface-variant hover:text-on-surface bg-transparent"
+                        }`}
                       onClick={() => setDeliveryMethod("delivery")}
                       type="button"
                     >
@@ -677,11 +745,10 @@ export default function CheckoutModal({
                       <span>Giao tận nơi (20-30p)</span>
                     </button>
                     <button
-                      className={`flex items-center justify-center gap-space-xs py-space-xs px-space-md rounded-full font-label-lg text-label-lg transition-all border-0 cursor-pointer ${
-                        deliveryMethod === "pickup"
-                          ? "bg-primary-container text-on-primary shadow-sm"
-                          : "text-on-surface-variant hover:text-on-surface bg-transparent"
-                      }`}
+                      className={`flex items-center justify-center gap-space-xs py-space-xs px-space-md rounded-full font-label-lg text-label-lg transition-all border-0 cursor-pointer ${deliveryMethod === "pickup"
+                        ? "bg-primary-container text-on-primary shadow-sm"
+                        : "text-on-surface-variant hover:text-on-surface bg-transparent"
+                        }`}
                       onClick={() => setDeliveryMethod("pickup")}
                       type="button"
                     >
@@ -787,6 +854,96 @@ export default function CheckoutModal({
 
                     {deliveryMethod === "delivery" ? (
                       <>
+                        {/* THÔNG BÁO NẾU CHƯA CÓ DỮ LIỆU ĐỊA CHỈ TRONG SỔ ĐỊA CHỈ */}
+                        {(!currentUser?.addresses || currentUser.addresses.length === 0) ? (
+                          <div className="md:col-span-2 p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-amber-900 animate-fadeIn">
+                            <span className="material-symbols-outlined text-amber-600 text-[24px] shrink-0 mt-0.5">
+                              location_off
+                            </span>
+                            <div className="flex-1 text-xs sm:text-sm">
+                              <strong className="text-amber-950 block font-bold text-[13.5px]">
+                                Bạn chưa có dữ liệu địa chỉ nhận hàng trong sổ địa chỉ!
+                              </strong>
+                              <span className="text-amber-800 block mt-1 leading-relaxed">
+                                Vui lòng nhập địa chỉ giao hàng vào các ô bên dưới để đặt hàng, hoặc thêm địa chỉ vào sổ địa chỉ để sử dụng nhanh cho các lần sau.
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (onOpenProfile) onOpenProfile();
+                                  else window.location.hash = "profile";
+                                }}
+                                className="mt-2.5 text-[12px] font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-3 py-1 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
+                              >
+                                <span className="material-symbols-outlined text-[15px]">add_location_alt</span>
+                                <span>Thêm địa chỉ vào sổ địa chỉ</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          /* DANH SÁCH ĐỊA CHỈ ĐÃ LƯU TRONG TÀI KHOẢN */
+                          <div className="md:col-span-2 flex flex-col gap-2 p-3 bg-surface-container-low rounded-xl border border-outline-variant/30">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-primary flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[17px] text-secondary">
+                                  bookmark
+                                </span>
+                                <span>Địa chỉ đã lưu của bạn ({currentUser.addresses.length})</span>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (onOpenProfile) onOpenProfile();
+                                  else window.location.hash = "profile";
+                                }}
+                                className="text-[11.5px] text-secondary hover:underline cursor-pointer bg-transparent border-0 p-0 font-medium"
+                              >
+                                + Quản lý sổ địa chỉ
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {currentUser.addresses.map((addr) => {
+                                const isSelected = streetAddress === addr.street;
+                                return (
+                                  <div
+                                    key={addr.id}
+                                    onClick={() => {
+                                      setStreetAddress(addr.street || "");
+                                      if (addr.recipientName) setCustomerName(addr.recipientName);
+                                      if (addr.phoneNumber) setCustomerPhone(addr.phoneNumber);
+                                      if (addr.district) setDistrict(addr.district);
+                                      if (addr.city) setCity(addr.city);
+                                      if (addr.note) setDeliveryNotes(addr.note);
+                                    }}
+                                    className={`p-2.5 rounded-lg border text-left cursor-pointer transition-all ${
+                                      isSelected
+                                        ? "bg-primary/5 border-primary shadow-xs ring-1 ring-primary/30"
+                                        : "bg-surface-container-lowest border-outline-variant/40 hover:border-primary/50"
+                                    }`}
+                                  >
+                                    <div className="flex items-center justify-between gap-1">
+                                      <span className="text-xs font-bold text-primary truncate">
+                                        {addr.recipientName || "Người nhận"}
+                                      </span>
+                                      {addr.isDefault && (
+                                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container uppercase">
+                                          Mặc định
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-[11.5px] text-on-surface-variant truncate mt-0.5">
+                                      {addr.phoneNumber}
+                                    </div>
+                                    <div className="text-[12px] text-on-surface mt-1 line-clamp-2">
+                                      {addr.street}, {addr.ward ? addr.ward + ", " : ""}{addr.district}, {addr.city}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
                         {/* City / District Cascades */}
                         <div className="flex flex-col gap-space-2xs">
                           <label
@@ -831,13 +988,23 @@ export default function CheckoutModal({
                         {/* Address Detail */}
                         <div className="md:col-span-2 flex flex-col gap-space-2xs">
                           <label
-                            className="font-label-sm text-label-sm text-on-surface-variant"
+                            className="font-label-sm text-label-sm text-on-surface-variant flex items-center justify-between"
                             htmlFor="street-address"
                           >
-                            Số nhà, Tòa nhà &amp; Tên đường *
+                            <span>Số nhà, Tòa nhà &amp; Tên đường *</span>
+                            {(!streetAddress || !streetAddress.trim()) && (
+                              <span className="text-red-500 text-[11px] font-bold flex items-center gap-0.5">
+                                <span className="material-symbols-outlined text-[13px]">error</span>
+                                Chưa có địa chỉ nhận hàng
+                              </span>
+                            )}
                           </label>
                           <input
-                            className="w-full bg-surface-container-low focus:bg-surface-container-lowest text-on-surface px-space-md py-space-xs rounded-lg font-body-md text-body-md outline-none transition-all shadow-inner border border-transparent focus:border-outline-variant"
+                            className={`w-full bg-surface-container-low focus:bg-surface-container-lowest text-on-surface px-space-md py-space-xs rounded-lg font-body-md text-body-md outline-none transition-all shadow-inner border ${
+                              !streetAddress || !streetAddress.trim()
+                                ? "border-amber-400 focus:border-red-400"
+                                : "border-transparent focus:border-outline-variant"
+                            }`}
                             id="street-address"
                             placeholder="Vd: 124 Phố Hàng Trống, Tòa nhà Heritage..."
                             type="text"
@@ -889,11 +1056,10 @@ export default function CheckoutModal({
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-xs">
                         <label
-                          className={`flex items-center gap-space-xs p-space-sm rounded-lg cursor-pointer transition-colors ${
-                            deliveryTiming === "now"
-                              ? "bg-surface-container shadow-xs"
-                              : "bg-surface-container-low hover:bg-surface-container"
-                          }`}
+                          className={`flex items-center gap-space-xs p-space-sm rounded-lg cursor-pointer transition-colors ${deliveryTiming === "now"
+                            ? "bg-surface-container shadow-xs"
+                            : "bg-surface-container-low hover:bg-surface-container"
+                            }`}
                         >
                           <input
                             checked={deliveryTiming === "now"}
@@ -912,11 +1078,10 @@ export default function CheckoutModal({
                           </div>
                         </label>
                         <label
-                          className={`flex items-center gap-space-xs p-space-sm rounded-lg cursor-pointer transition-colors ${
-                            deliveryTiming === "scheduled"
-                              ? "bg-surface-container shadow-xs"
-                              : "bg-surface-container-low hover:bg-surface-container"
-                          }`}
+                          className={`flex items-center gap-space-xs p-space-sm rounded-lg cursor-pointer transition-colors ${deliveryTiming === "scheduled"
+                            ? "bg-surface-container shadow-xs"
+                            : "bg-surface-container-low hover:bg-surface-container"
+                            }`}
                         >
                           <input
                             checked={deliveryTiming === "scheduled"}
@@ -1059,11 +1224,10 @@ export default function CheckoutModal({
                     {/* Payment 1: VietQR Bank Transfer (Recommended) */}
                     <label
                       onClick={() => setPaymentMethod("vietqr")}
-                      className={`group relative flex flex-col p-space-md rounded-xl cursor-pointer transition-all ${
-                        paymentMethod === "vietqr"
-                          ? "bg-surface-container ring-1 ring-primary/20 shadow-xs"
-                          : "bg-surface-container-low hover:bg-surface-container"
-                      }`}
+                      className={`group relative flex flex-col p-space-md rounded-xl cursor-pointer transition-all ${paymentMethod === "vietqr"
+                        ? "bg-surface-container ring-1 ring-primary/20 shadow-xs"
+                        : "bg-surface-container-low hover:bg-surface-container"
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-space-sm">
@@ -1091,7 +1255,7 @@ export default function CheckoutModal({
                           </div>
                         </div>
                         <span className="font-label-sm text-label-sm text-on-secondary-fixed-variant bg-secondary-container px-space-xs py-1 rounded-full font-bold uppercase tracking-wider">
-                          Khuyên dùng • Tự động 3s
+                          Khuyên dùng • Tự động
                         </span>
                       </div>
                       {/* QR Detail Preview Hint */}
@@ -1109,11 +1273,10 @@ export default function CheckoutModal({
                     {/* Payment 2: Credit Card (Visa/Master/JCB) */}
                     <label
                       onClick={() => setPaymentMethod("card")}
-                      className={`group relative flex flex-col p-space-md rounded-xl cursor-pointer transition-all ${
-                        paymentMethod === "card"
-                          ? "bg-surface-container ring-1 ring-primary/20 shadow-xs"
-                          : "bg-surface-container-low hover:bg-surface-container"
-                      }`}
+                      className={`group relative flex flex-col p-space-md rounded-xl cursor-pointer transition-all ${paymentMethod === "card"
+                        ? "bg-surface-container ring-1 ring-primary/20 shadow-xs"
+                        : "bg-surface-container-low hover:bg-surface-container"
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-space-sm">
@@ -1154,11 +1317,10 @@ export default function CheckoutModal({
                     {/* Payment 3: E-wallets (MoMo/ZaloPay) */}
                     <label
                       onClick={() => setPaymentMethod("wallet")}
-                      className={`group relative flex flex-col p-space-md rounded-xl cursor-pointer transition-all ${
-                        paymentMethod === "wallet"
-                          ? "bg-surface-container ring-1 ring-primary/20 shadow-xs"
-                          : "bg-surface-container-low hover:bg-surface-container"
-                      }`}
+                      className={`group relative flex flex-col p-space-md rounded-xl cursor-pointer transition-all ${paymentMethod === "wallet"
+                        ? "bg-surface-container ring-1 ring-primary/20 shadow-xs"
+                        : "bg-surface-container-low hover:bg-surface-container"
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-space-sm">
@@ -1194,11 +1356,10 @@ export default function CheckoutModal({
                     {/* Payment 4: COD Cash On Delivery */}
                     <label
                       onClick={() => setPaymentMethod("cod")}
-                      className={`group relative flex flex-col p-space-md rounded-xl cursor-pointer transition-all ${
-                        paymentMethod === "cod"
-                          ? "bg-surface-container ring-1 ring-primary/20 shadow-xs"
-                          : "bg-surface-container-low hover:bg-surface-container"
-                      }`}
+                      className={`group relative flex flex-col p-space-md rounded-xl cursor-pointer transition-all ${paymentMethod === "cod"
+                        ? "bg-surface-container ring-1 ring-primary/20 shadow-xs"
+                        : "bg-surface-container-low hover:bg-surface-container"
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-space-sm">
@@ -1336,11 +1497,10 @@ export default function CheckoutModal({
                       {appliedCoupons.map((coupon) => (
                         <span
                           key={coupon.code}
-                          className={`inline-flex items-center gap-1 font-label-sm text-label-sm px-space-xs py-1 rounded-full font-semibold ${
-                            coupon.code === "FREESHIP"
-                              ? "bg-secondary-container text-on-secondary-container"
-                              : "bg-primary-fixed text-on-primary-fixed"
-                          }`}
+                          className={`inline-flex items-center gap-1 font-label-sm text-label-sm px-space-xs py-1 rounded-full font-semibold ${coupon.code === "FREESHIP"
+                            ? "bg-secondary-container text-on-secondary-container"
+                            : "bg-primary-fixed text-on-primary-fixed"
+                            }`}
                         >
                           <span className="material-symbols-outlined text-[13px]">
                             {coupon.code === "FREESHIP"
@@ -1536,9 +1696,15 @@ export default function CheckoutModal({
               {/* QR Image Box */}
               <div className="p-3 bg-white rounded-xl shadow-inner border border-surface-container-high flex flex-col items-center">
                 <img
-                  src={`https://img.vietqr.io/image/970422-0903888234-compact2.png?amount=${grandTotal}&addInfo=${encodeURIComponent(
-                    createdOrderCode
-                  )}&accountName=VELVET%20BREW`}
+                  src={
+                    payosQrCode
+                      ? `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
+                          payosQrCode
+                        )}&size=260x260`
+                      : `https://img.vietqr.io/image/970422-0366448294-compact2.png?amount=${grandTotal}&addInfo=${encodeURIComponent(
+                          createdOrderCode
+                        )}&accountName=VELVET%20BREW`
+                  }
                   alt="VietQR Code"
                   className="w-56 h-56 object-contain"
                   onError={(e) => {
@@ -1550,6 +1716,15 @@ export default function CheckoutModal({
                 </span>
               </div>
 
+              {/* Realtime Listening Status Badge */}
+              <div className="flex items-center justify-center gap-2 py-2 px-3 bg-[#e6f4ea] border border-[#ceead6] rounded-full text-[#137333] text-[12px] font-semibold w-full">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34a853] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#1e8e3e]"></span>
+                </span>
+                <span>Hệ thống tự động hoàn tất ngay khi nhận được tiền...</span>
+              </div>
+
               {/* Thông tin tài khoản */}
               <div className="w-full bg-surface-container-low p-space-sm rounded-xl text-left flex flex-col gap-1 text-body-sm">
                 <div className="flex justify-between">
@@ -1558,7 +1733,7 @@ export default function CheckoutModal({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-on-surface-variant">Số tài khoản:</span>
-                  <strong className="text-primary tracking-wide">0903 888 234</strong>
+                  <strong className="text-primary tracking-wide">0366 448 294</strong>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-on-surface-variant">Chủ tài khoản:</span>
@@ -1571,6 +1746,19 @@ export default function CheckoutModal({
                   </strong>
                 </div>
               </div>
+
+              {/* Link mở PayOS nếu có */}
+              {payosCheckoutUrl && (
+                <a
+                  href={payosCheckoutUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-2.5 px-4 rounded-xl bg-[#0052cc] hover:bg-[#0747a6] text-white font-label-md font-bold text-center flex items-center justify-center gap-2 no-underline transition-all shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+                  <span>Mở Cổng Thanh Toán PayOS</span>
+                </a>
+              )}
 
               {/* Countdown time */}
               <div className="flex items-center gap-1.5 text-on-surface-variant font-label-sm">

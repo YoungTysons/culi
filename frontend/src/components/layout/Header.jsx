@@ -10,6 +10,7 @@ export default function Header({
   onOpenAdmin,
   onOpenAuth,
   onOpenProfile,
+  onOpenOrders,
 }) {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -412,6 +413,40 @@ export default function Header({
                       badge
                     </span>
                     <span>Thông tin khách hàng</span>
+                  </button>
+
+                  {/* NÚT LỊCH SỬ ĐƠN HÀNG */}
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      if (onOpenOrders) {
+                        onOpenOrders();
+                      } else {
+                        window.location.hash = "orders";
+                      }
+                    }}
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      padding: "9px 12px",
+                      background: "#fdf9f2",
+                      color: "#271310",
+                      border: "1px solid #e6e2db",
+                      borderRadius: "8px",
+                      fontSize: "12.5px",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "6px",
+                      transition: "background 0.2s",
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: "17px", color: "#8a5100" }}>
+                      receipt_long
+                    </span>
+                    <span>Lịch sử đơn hàng</span>
                   </button>
 
                   {/* Nút Đăng xuất */}

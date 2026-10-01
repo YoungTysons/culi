@@ -18,6 +18,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import CheckoutModal from "./components/checkout/CheckoutModal";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import UserProfile from "./components/profile/UserProfile";
+import OrderHistory from "./components/profile/OrderHistory";
 
 function MainApp() {
   const { user, loading } = useAuth();
@@ -26,9 +27,11 @@ function MainApp() {
       ? "admin"
       : window.location.hash === "#checkout"
         ? "checkout"
-        : window.location.hash === "#profile"
-          ? "profile"
-          : "store"
+        : window.location.hash === "#orders"
+          ? "orders"
+          : window.location.hash === "#profile"
+            ? "profile"
+            : "store"
   );
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -111,6 +114,8 @@ function MainApp() {
         setCurrentView("admin");
       } else if (window.location.hash === "#checkout") {
         setCurrentView("checkout");
+      } else if (window.location.hash === "#orders") {
+        setCurrentView("orders");
       } else if (window.location.hash === "#profile") {
         setCurrentView("profile");
       } else {
@@ -250,6 +255,10 @@ function MainApp() {
             window.location.hash = "";
             setCurrentView("store");
           }}
+          onViewAllOrders={() => {
+            window.location.hash = "orders";
+            setCurrentView("orders");
+          }}
           onOpenCart={() => {
             window.location.hash = "";
             setCurrentView("store");
@@ -258,6 +267,40 @@ function MainApp() {
           onOpenAdmin={() => {
             window.location.hash = "admin";
             setCurrentView("admin");
+          }}
+          onOpenAuth={() => setAuthModalOpen(true)}
+          cartCount={cartCount}
+        />
+        <AuthModal
+          isOpen={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
+        />
+      </>
+    );
+  }
+
+  // 6. KHI CHUYỂN SANG GIAO DIỆN LỊCH SỬ TẤT CẢ ĐƠN HÀNG (ORDER HISTORY)
+  if (currentView === "orders") {
+    return (
+      <>
+        <OrderHistory
+          user={user}
+          onBackToStore={() => {
+            window.location.hash = "";
+            setCurrentView("store");
+          }}
+          onBackToProfile={() => {
+            window.location.hash = "profile";
+            setCurrentView("profile");
+          }}
+          onOpenAdmin={() => {
+            window.location.hash = "admin";
+            setCurrentView("admin");
+          }}
+          onOpenCart={() => {
+            window.location.hash = "";
+            setCurrentView("store");
+            setDrawer(true);
           }}
           onOpenAuth={() => setAuthModalOpen(true)}
           cartCount={cartCount}
@@ -288,6 +331,10 @@ function MainApp() {
         onOpenProfile={() => {
           window.location.hash = "profile";
           setCurrentView("profile");
+        }}
+        onOpenOrders={() => {
+          window.location.hash = "orders";
+          setCurrentView("orders");
         }}
       />
 

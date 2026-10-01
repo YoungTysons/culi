@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import logoIcon from "../../assets/logo-icon.png";
 import { useAuth } from "../../context/AuthContext";
+import authApi from "../../api/authApi";
+import orderApi from "../../api/orderApi";
 
 export default function UserProfile({
   user: propUser,
@@ -8,6 +10,7 @@ export default function UserProfile({
   onOpenCart,
   onOpenAuth,
   onOpenAdmin,
+  onViewAllOrders,
   cartCount = 0,
 }) {
   const { user: authUser, loading, logout, updateUser } = useAuth();
@@ -51,8 +54,8 @@ export default function UserProfile({
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "");
   const [email, setEmail] = useState(user?.email || "");
   const isGoogleAccount = Boolean(
-  user?.isGoogle || user?.avatar?.includes("googleusercontent.com")
-);
+    user?.isGoogle || user?.avatar?.includes("googleusercontent.com")
+  );
   const [googleConnected, setGoogleConnected] = useState(isGoogleAccount);
   const [appleConnected, setAppleConnected] = useState(false);
 
@@ -78,29 +81,370 @@ export default function UserProfile({
     tag: "office", // "home" | "office" | "other"
     isDefault: false,
   });
-  const [addresses, setAddresses] = useState([
+  const [addresses, setAddresses] = useState([]);
+  const [editingAddressId, setEditingAddressId] = useState(null); // Để biết đang thêm mới hay sửa  
+
+  // Refs cho các phân mục để tự động scroll mượt mà
+  const profileSectionRef = useRef(null);
+  const securitySectionRef = useRef(null);
+  const addressSectionRef = useRef(null);
+  const ordersSectionRef = useRef(null);
+
+  // Hàm chuyển tab và tự động cuộn mượt xuống section tương ứng
+  const scrollToSection = (tabKey, ref) => {
+    setActiveTab(tabKey);
+    setTimeout(() => {
+      if (ref && ref.current) {
+        ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 60);
+  };
+
+  // States quản lý đơn hàng
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [orderFilterStatus, setOrderFilterStatus] = useState("ALL"); // ALL | DELIVERING | PREPARING | COMPLETED | CANCELLED
+  const [orderSearchQuery, setOrderSearchQuery] = useState("");
+  const [selectedOrderForDetail, setSelectedOrderForDetail] = useState(null);
+  const [orderNotificationToast, setOrderNotificationToast] = useState(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState(null);
+
+  // Tải danh sách đơn hàng của tài khoản từ backend
+  const fetchMyOrders = async () => {
+    setLoadingOrders(true);
+    try {
+      const res = await orderApi.getMyOrders(user?.id ? { userId: user.id } : {});
+      const list = res.orders || res.data || [];
+      setOrders(list);
+    } catch (err) {
+      console.warn("Lỗi tải đơn hàng:", err.message);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMyOrders();
+    if (window.location.hash === "#orders") {
+      setTimeout(() => {
+        scrollToSection("orders", ordersSectionRef);
+      }, 250);
+    }
+  }, [user?.id]);
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) return;
+    setCancellingOrderId(orderId);
+    try {
+      await orderApi.cancelOrder(orderId);
+      setOrderNotificationToast({
+        title: "Đã hủy đơn hàng thành công",
+        message: `Đơn hàng #${orderId} đã được chuyển sang trạng thái đã hủy.`,
+        icon: "check_circle",
+      });
+      fetchMyOrders();
+    } catch (err) {
+      alert(err.response?.data?.message || "Không thể hủy đơn hàng này!");
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
+
+  const handleReorder = (order) => {
+    setOrderNotificationToast({
+      title: "Đã chọn đặt lại đơn hàng!",
+      message: `Các món trong đơn #${order.orderCode} đã sẵn sàng trong giỏ của bạn.`,
+      icon: "shopping_cart_checkout",
+    });
+    setTimeout(() => {
+      setOrderNotificationToast(null);
+    }, 4000);
+  };
+
+  const formatCurrency = (val) => {
+    return Number(val || 0).toLocaleString("vi-VN") + "đ";
+  };
+
+  const formatOrderDate = (dateStr) => {
+    if (!dateStr) return "Hôm nay";
+    try {
+      const d = new Date(dateStr);
+      return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")} - ${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}/${d.getFullYear()}`;
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
+  // Mẫu đơn hàng chuẩn thiết kế Velvet & Brew
+  const defaultMockOrders = [
     {
-      id: 1,
-      title: "Chung cư Artemis (Nhà riêng)",
-      tag: "Địa chỉ mặc định",
-      isDefault: true,
-      address:
-        "Tầng 5, Tòa Nhà Artemis Plaza, 03 Lê Trọng Tấn, P. Khương Mai, Q. Thanh Xuân, Hà Nội",
-      recipient: user?.fullName || "Nguyễn Minh Trí",
-      phone: user?.phoneNumber || "0903 888 234",
+      id: 98241,
+      orderCode: "VB-98241",
+      createdAt: new Date().toISOString(),
+      status: "DELIVERING",
+      isPaid: true,
+      paymentMethod: "VISA",
+      shippingAddress: "Chung cư Artemis, Tầng 5, 03 Lê Trọng Tấn, P. Khương Mai, Q. Thanh Xuân, Hà Nội",
+      recipientName: fullName || "Nguyễn Minh Trí",
+      recipientPhone: phoneNumber || "0903 888 234",
+      note: "Cho xin thêm 2 ống hút giấy và ít đá riêng",
+      subtotal: 165000,
+      shippingFee: 20000,
+      discountAmount: 40000,
+      totalAmount: 145000,
+      brewPoints: 15,
+      deliveryTimeEstimate: "15-20 phút (Tài xế cách 1.2km)",
+      items: [
+        {
+          id: 101,
+          name: "Cà Phê Trứng Nướng Brulee",
+          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDdMxKFz8br9A39E0teaeHqEzquEMikNt5F_Kzyc-YpEq2rfj7Rgi9w-cvCnaCF6sPoof7JNpcbuNHgmPwbONA4F0BZ7IYQeDpc6BPWhf16i3UPrd5oCB_xTjHGW4yzj2k2iLobsc4_g4yboYNq8i1OCt5-8GlnjoMZ4pnOFIFkIACP5mx5dmzVXDujf-GtxayOlbM1KIveA2AfI4QRkrYhva_5caYa_D-VCBrOfDsvYcsNU80rfAI3Vw",
+          quantity: 1,
+          sizeName: "Size L",
+          sweetness: "50% đường",
+          ice: "Ít đá",
+          toppings: ["Trân châu hoàng kim", "Thạch pudding"],
+          unitPrice: 65000,
+        },
+        {
+          id: 102,
+          name: "Trà Sữa Oolong Nướng Rang Mộc",
+          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBCbe5hSL5WTGVXUf8LydC7rfsFlD2P2ggr-2waDg7boSlCqww05r5Svd7oSGIaBb02FpoOirzaZJvJEkBV93rgjC1csGm5vX3YnYji2qkVZQ4xBuv0_WvSTGkroTarOUdc2kxZk8HQpgp0249xQ55zh32YPirn0eefK65hmKTagj6k53UYrFzZElMakOSd7xXThx-YlQ-2QM-F687mTCw4--aI88SyNq9Ww9eh7QZk-h6c9ZX3bUnFvA",
+          quantity: 1,
+          sizeName: "Size M",
+          sweetness: "70% đường",
+          ice: "50% đá",
+          toppings: ["Thạch Espresso nướng"],
+          unitPrice: 55000,
+        },
+        {
+          id: 103,
+          name: "Bánh Croissant Hạnh Nhân Bơ Pháp",
+          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDgMQO1qbJqLhuL3iPsMcIDTG0SkiX_-l84-RnCAIsZ7AiP35Ntl93PwKR-nCrgevEaGSLCXlRM_39S9QrOuqV--UuKxvHvIbi24KEwfGm0VOkKJLxTaQo1wUVBMCEL4w_k7RloPElBf1mdFBquCqAw2_nBMV5NIsejM_B76grWB8tau3Ij7fAC65qLihL7q0IkkjgMT0Hk4rP94020FPFj2W-u9RIqcSSQq1e1PITZ4Oz9_Mg2tnp0qw",
+          quantity: 1,
+          sizeName: "Nóng giòn",
+          sweetness: "",
+          ice: "",
+          toppings: ["Bơ Pháp Elle & Vire"],
+          unitPrice: 45000,
+        },
+      ],
     },
     {
-      id: 2,
-      title: "Văn phòng Sáng tạo Velvet",
-      tag: "Văn phòng làm việc",
-      isDefault: false,
-      address: "Phòng 402, 124 Phố Huế, P. Hàng Bài, Q. Hoàn Kiếm, Hà Nội",
-      recipient:
-        (user?.fullName ? user.fullName.split(" ").slice(-1)[0] : "Trí") +
-        " (Lễ tân tầng 1)",
-      phone: user?.phoneNumber || "0903 888 234",
+      id: 98190,
+      orderCode: "VB-98190",
+      createdAt: "2024-10-24T08:45:00.000Z",
+      status: "PREPARING",
+      isPaid: true,
+      paymentMethod: "MOMO",
+      shippingAddress: "Lấy mang đi tại quầy Velvet & Brew 124 Phố Cổ, Hoàn Kiếm, Hà Nội",
+      recipientName: nickname || "Trí Nguyễn",
+      recipientPhone: phoneNumber || "0903 888 234",
+      note: "Để đá riêng, đóng nắp chống tràn mang đi",
+      subtotal: 120000,
+      shippingFee: 0,
+      discountAmount: 0,
+      totalAmount: 120000,
+      brewPoints: 12,
+      deliveryTimeEstimate: "Đang pha chế (Khoảng 5 phút)",
+      items: [
+        {
+          id: 104,
+          name: "Cold Brew Cam Sả Quế Thảo Mộc",
+          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAyDeekpkli4cFFc6N7oViWPHymJSZaCi4lceB_95Sk1qdRfcDI1-Cvw-NndZU77kzeTILErZnREq4RNu4f7Mzs104RvPeYzW69onZoewzixEyLcy07i_i-zTb7wWvJPO2iIzhZiEq_ErADXus1oWS1mkmxKviKKMp9Nujj-025_AGpADf7bx8Xm7WIxLt9LqCgdZWw007vxtlIjdAaeygOIOvk4lSmzc8eVCceM4xoBWCkh5MwauQf0w",
+          quantity: 2,
+          sizeName: "Size L",
+          sweetness: "Chuẩn",
+          ice: "Đá riêng",
+          toppings: ["Quế thanh & cam vàng"],
+          unitPrice: 60000,
+        },
+      ],
     },
-  ]);
+    {
+      id: 97815,
+      orderCode: "VB-97815",
+      createdAt: "2024-10-22T15:20:00.000Z",
+      status: "COMPLETED",
+      isPaid: true,
+      paymentMethod: "MOMO",
+      shippingAddress: "Phòng 402, 124 Phố Huế, P. Hàng Bài, Q. Hoàn Kiếm, Hà Nội",
+      recipientName: nickname || "Trí Nguyễn (Lễ tân tầng 1)",
+      recipientPhone: phoneNumber || "0903 888 234",
+      subtotal: 185000,
+      shippingFee: 0,
+      totalAmount: 185000,
+      brewPoints: 19,
+      reviewRating: 5,
+      reviewComment: "Cà phê thơm đậm vị, bọt sữa cực mịn ngậy!",
+      items: [
+        {
+          id: 105,
+          name: "Latte Hạnh Nhân Macchiato Yến Mạch",
+          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCceJ032XSzChnNnnQTBq6Cpz84M9Nhc1NmFnpHQdBtEoLx_iL9yFyBr8jz8S2I6FRcv7vyKbKaObPcLw_qgN5mxWdqkEfnq0hARAcQIyfstm8h-MS7skoW8fV7I02FTsEWRjJuer2gTd7cM4b7uWkRyFaN0xkYR-GA4PkOuRdIKXDBnpPEvmeX1Suyj_gYqYEYFZMqSlr4nrRWI8mRMDECImHC61o_l72WtVnS3oFok_E_5Y8RoWj6xg",
+          quantity: 2,
+          sizeName: "Size L",
+          sweetness: "Ít ngọt",
+          ice: "Uống nóng",
+          toppings: ["Sữa hạt Hạnh nhân hữu cơ"],
+          unitPrice: 65000,
+        },
+        {
+          id: 106,
+          name: "Trà Shan Tuyết Cổ Thụ Mật Ong Rừng",
+          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCFFCKDGYgwQipvk0iLZwyKEjYzMqMxDkaQ1UO3KHZ9MHNQiujsgrOqKACVs1k6q4UY_IescnpJ5C8Kn88iWXH9Sx2v68N6Tc5t31l7LtddqJWoALfEg3w9ByyB9VOz08sqJFjmocgy4ivhcPWYSj33xWHByiMBrvvOa9p2UYVJwV685klG18NyMBHCgFV40briO-nzIvdVr6HEN0rIkNbuVFjGok1Llep2FfnmRclpA52NiiGOvzoOxQ",
+          quantity: 1,
+          sizeName: "Size M",
+          sweetness: "Chuẩn",
+          ice: "Nóng nhẹ",
+          toppings: ["Mật ong hoa rừng tự nhiên"],
+          unitPrice: 55000,
+        },
+      ],
+    },
+    {
+      id: 96204,
+      orderCode: "VB-96204",
+      createdAt: "2024-10-18T14:10:00.000Z",
+      status: "COMPLETED",
+      isPaid: true,
+      paymentMethod: "COD",
+      shippingAddress: "Cửa hàng Velvet & Brew 124 Phố Cổ, Q. Hoàn Kiếm, Hà Nội",
+      recipientName: fullName || "Nguyễn Minh Trí",
+      recipientPhone: phoneNumber || "0903 888 234",
+      subtotal: 58000,
+      shippingFee: 0,
+      totalAmount: 58000,
+      brewPoints: 6,
+      items: [
+        {
+          id: 107,
+          name: "Trà Sữa Thiết Quan Âm Kem Phô Mai Macchiato",
+          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBRJL49kbOfaFBCFZDYBNKW99XVAxvrCHMrOgHCxEKNsmNLmcPlEPbtkLApu3w5E6GqtV3HWoguAdnFvbPsTEpVhAUfepc3LS9PQzgNJP2K8mNQRdvRnDwezp6pk0IwHukgsHFMgcQ7CE0HyUB--0R9OT1J6lc-iXI0fR13_aqyYjThjsnwoqRsiKz6Y4D5FgKiWHaXQLPI70_wn4efbAnsHmHRpLsjJ3MldtB2z2F9Ga5XzHKEI1zfEA",
+          quantity: 1,
+          sizeName: "Size L",
+          sweetness: "30% đường",
+          ice: "Chuẩn",
+          toppings: ["Trân châu đen hoàng gia"],
+          unitPrice: 58000,
+        },
+      ],
+    },
+    {
+      id: 95112,
+      orderCode: "VB-95112",
+      createdAt: "2024-10-10T09:00:00.000Z",
+      status: "CANCELLED",
+      isPaid: false,
+      paymentMethod: "VNPAY",
+      shippingAddress: "Chung cư Artemis, Tầng 5, 03 Lê Trọng Tấn, Thanh Xuân, Hà Nội",
+      recipientName: fullName || "Nguyễn Minh Trí",
+      recipientPhone: phoneNumber || "0903 888 234",
+      subtotal: 110000,
+      shippingFee: 0,
+      totalAmount: 110000,
+      brewPoints: 0,
+      cancelReason: "Quý khách đổi ý địa chỉ giao hàng ngoài bán kính phục vụ 5km.",
+      refundStatus: "Đã hoàn 110.000đ về thẻ ngân hàng",
+      items: [
+        {
+          id: 108,
+          name: "Espresso Tonic Cam Vàng & Tiramisu Cacao Specialty",
+          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAyDeekpkli4cFFc6N7oViWPHymJSZaCi4lceB_95Sk1qdRfcDI1-Cvw-NndZU77kzeTILErZnREq4RNu4f7Mzs104RvPeYzW69onZoewzixEyLcy07i_i-zTb7wWvJPO2iIzhZiEq_ErADXus1oWS1mkmxKviKKMp9Nujj-025_AGpADf7bx8Xm7WIxLt9LqCgdZWw007vxtlIjdAaeygOIOvk4lSmzc8eVCceM4xoBWCkh5MwauQf0w",
+          quantity: 1,
+          sizeName: "Size L",
+          sweetness: "Chuẩn",
+          ice: "Chuẩn",
+          toppings: [],
+          unitPrice: 110000,
+        },
+      ],
+    },
+  ];
+
+  // Kết hợp đơn thật trong database với mẫu thiết kế
+  const allOrders = [
+    ...orders.map((dbOrder) => ({
+      id: dbOrder.id,
+      orderCode: dbOrder.orderCode,
+      createdAt: dbOrder.createdAt,
+      status: dbOrder.status, // PENDING | PREPARING | DELIVERING | COMPLETED | CANCELLED
+      isPaid: dbOrder.isPaid,
+      paymentMethod: dbOrder.paymentMethod,
+      shippingAddress: dbOrder.shippingAddress,
+      recipientName: fullName || user?.fullName || "Khách Hàng",
+      recipientPhone: phoneNumber || user?.phoneNumber || "",
+      note: dbOrder.note || "",
+      subtotal: Number(dbOrder.subtotal) || Number(dbOrder.totalAmount) || 0,
+      shippingFee: Number(dbOrder.shippingFee) || 0,
+      totalAmount: Number(dbOrder.totalAmount) || 0,
+      brewPoints: Math.max(1, Math.round((Number(dbOrder.totalAmount) || 0) / 10000)),
+      deliveryTimeEstimate:
+        dbOrder.status === "DELIVERING"
+          ? "Tài xế đang giao (10-15 phút)"
+          : dbOrder.status === "PREPARING"
+          ? "Barista đang pha chế (5-10 phút)"
+          : null,
+      items:
+        dbOrder.items?.map((it) => ({
+          id: it.id,
+          name: it.product?.name || "Cà Phê Velvet & Brew",
+          image:
+            it.product?.image ||
+            "https://lh3.googleusercontent.com/aida-public/AB6AXuDdMxKFz8br9A39E0teaeHqEzquEMikNt5F_Kzyc-YpEq2rfj7Rgi9w-cvCnaCF6sPoof7JNpcbuNHgmPwbONA4F0BZ7IYQeDpc6BPWhf16i3UPrd5oCB_xTjHGW4yzj2k2iLobsc4_g4yboYNq8i1OCt5-8GlnjoMZ4pnOFIFkIACP5mx5dmzVXDujf-GtxayOlbM1KIveA2AfI4QRkrYhva_5caYa_D-VCBrOfDsvYcsNU80rfAI3Vw",
+          quantity: it.quantity || 1,
+          sizeName: it.sizeName || "Size M",
+          sweetness: it.sweetness || "Chuẩn",
+          ice: it.ice || "Chuẩn",
+          toppings: [],
+          unitPrice: Number(it.unitPrice) || 0,
+        })) || [],
+    })),
+    ...defaultMockOrders.filter(
+      (mock) => !orders.some((db) => db.orderCode === mock.orderCode)
+    ),
+  ];
+
+  const activeOrdersCount = allOrders.filter(
+    (o) => o.status === "DELIVERING" || o.status === "PREPARING" || o.status === "PENDING"
+  ).length;
+
+  const deliveringCount = allOrders.filter((o) => o.status === "DELIVERING").length;
+  const preparingCount = allOrders.filter(
+    (o) => o.status === "PREPARING" || o.status === "PENDING"
+  ).length;
+  const completedCount = allOrders.filter((o) => o.status === "COMPLETED").length;
+  const cancelledCount = allOrders.filter((o) => o.status === "CANCELLED").length;
+
+  const totalSpent = allOrders
+    .filter((o) => o.status === "COMPLETED" || o.status === "DELIVERING" || o.status === "PREPARING")
+    .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+  const totalBrewPoints = allOrders.reduce((sum, o) => sum + (o.brewPoints || 0), 0);
+
+  // Lọc theo tabs và tìm kiếm
+  const filteredOrders = allOrders.filter((order) => {
+    if (orderFilterStatus === "DELIVERING" && order.status !== "DELIVERING") return false;
+    if (
+      orderFilterStatus === "PREPARING" &&
+      order.status !== "PREPARING" &&
+      order.status !== "PENDING"
+    )
+      return false;
+    if (orderFilterStatus === "COMPLETED" && order.status !== "COMPLETED") return false;
+    if (orderFilterStatus === "CANCELLED" && order.status !== "CANCELLED") return false;
+
+    if (orderSearchQuery.trim()) {
+      const q = orderSearchQuery.toLowerCase();
+      const matchCode = order.orderCode.toLowerCase().includes(q);
+      const matchAddress = (order.shippingAddress || "").toLowerCase().includes(q);
+      const matchItems = order.items.some((it) => it.name.toLowerCase().includes(q));
+      if (!matchCode && !matchAddress && !matchItems) return false;
+    }
+    return true;
+  });
+
+
 
   // Đồng bộ khi dữ liệu user từ backend tải xong
   useEffect(() => {
@@ -114,20 +458,6 @@ export default function UserProfile({
       if (user.avatar) setAvatar(user.avatar);
       if (user.gender) setGender(user.gender)
       if (user.nickname) setNickname(user.nickname)
-      if (user.address) {
-        setAddresses(user.address.map(addr => {
-          const fullAddress = [addr.street, addr.ward, addr.district, addr.city].filter(Boolean).join(', ');
-          return {
-            id: addr.id,
-            title: addr.addressLabel || addr.type,
-            tag: "",
-            isDefault: addr.isDefault || false,
-            address: fullAddress,
-            recipient: addr.recipientName,
-            phone: addr.recipientPhone,
-          }
-        }))
-      }
       setAddresses((prev) =>
         prev.map((addr) => ({
           ...addr,
@@ -153,30 +483,76 @@ export default function UserProfile({
   };
 
   // Set default address
-  const handleSetDefaultAddress = (id) => {
-    setAddresses((prev) =>
-      prev.map((addr) => ({
-        ...addr,
-        isDefault: addr.id === id,
-        tag: addr.id === id ? "Địa chỉ mặc định" : "Văn phòng làm việc",
-      }))
-    );
+  const handleSetDefaultAddress = async (id) => {
+    try {
+      await authApi.updateAddress(id, { isDefault: true });
+      alert("Đã đặt làm địa chỉ mặc định!");
+      fetchAddresses(); // Cập nhật lại giao diện
+    } catch (error) {
+      console.error(error);
+      alert("Không thể đặt làm mặc định!");
+    }
   };
 
+  const fetchAddresses = async () => {
+    try {
+      const res = await authApi.getAddress();
+      // res.data hoặc res.data.data tùy theo axiosClient của bạn trả về
+      const list = res.data || res || [];
+      setAddresses(list.map(formatAddressItem));
+    } catch (error) {
+      console.error("Lỗi tải danh sách địa chỉ:", error);
+    }
+  };
+  useEffect(() => {
+    fetchAddresses();
+  }, []);
+
+  const formatAddressItem = (addr) => {
+    const fullAddr = [addr.street, addr.ward, addr.district, addr.city].filter(Boolean).join(", ");
+    const tagLabel = addr.label === "OFFICE" ? "Văn phòng làm việc" : addr.label === "HOME" ? "Nhà riêng" : "Địa chỉ phụ";
+    return {
+      ...addr,
+      id: addr.id,
+      title: addr.label === "OFFICE" ? `Văn phòng (${addr.street})` : `Nhà riêng (${addr.street})`,
+      tag: addr.isDefault ? "Địa chỉ mặc định" : tagLabel,
+      address: fullAddr,
+      recipient: addr.recipientName,
+      phone: addr.phoneNumber,
+    };
+  };
+
+
   // Delete address
-  const handleDeleteAddress = (id) => {
+  const handleDeleteAddress = async (id) => {
     if (addresses.length <= 1) {
       alert("Cần giữ lại ít nhất 1 địa chỉ để nhận hàng!");
       return;
     }
-    setAddresses((prev) => prev.filter((addr) => addr.id !== id));
+    if (!window.confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) {
+      return;
+    }
+
+    try {
+      await authApi.deleteAddress(id);
+      if (editingAddressId === id) {
+        setShowAddressModal(false);
+        setEditingAddressId(null);
+      }
+      fetchAddresses();
+      alert("Địa chỉ đã được xóa thành công!");
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || "Xóa địa chỉ thất bại!");
+    }
   };
 
   // Mở Modal Thêm địa chỉ mới
   const handleAddNewAddress = () => {
+    setEditingAddressId(null);
     setNewAddressData({
-      recipientName: fullName || user?.fullName || "Nguyễn Minh Trí",
-      phoneNumber: phoneNumber || user?.phoneNumber || "0903 888 234",
+      recipientName: fullName || user?.fullName || "",
+      phoneNumber: phoneNumber || user?.phoneNumber || "",
       city: "Hà Nội",
       district: "Thanh Xuân",
       ward: "Khương Mai",
@@ -188,55 +564,61 @@ export default function UserProfile({
     setShowAddressModal(true);
   };
 
-  // Lưu địa chỉ mới vào danh sách
-  const handleSaveNewAddress = (e) => {
+  // Lưu địa chỉ (Thêm mới hoặc Cập nhật)
+  const handleSaveNewAddress = async (e) => {
     if (e) e.preventDefault();
-    if (
-      !newAddressData.recipientName.trim() ||
-      !newAddressData.phoneNumber.trim() ||
-      !newAddressData.street.trim()
-    ) {
+    if (!newAddressData.recipientName.trim() || !newAddressData.phoneNumber.trim() || !newAddressData.street.trim()) {
       alert("Vui lòng điền đầy đủ họ tên người nhận, số điện thoại và địa chỉ chi tiết!");
       return;
     }
 
-    const fullAddr = `${newAddressData.street.trim()}, P. ${newAddressData.ward}, Q. ${newAddressData.district}, ${newAddressData.city}`;
-    const tagMap = {
-      home: "Nhà riêng",
-      office: "Văn phòng làm việc",
-      other: "Địa chỉ phụ",
-    };
-
-    const newAddr = {
-      id: Date.now(),
-      title:
-        newAddressData.tag === "home"
-          ? `Nhà riêng (${newAddressData.street.trim()})`
-          : newAddressData.tag === "office"
-            ? `Văn phòng (${newAddressData.street.trim()})`
-            : newAddressData.street.trim(),
-      tag: newAddressData.isDefault ? "Địa chỉ mặc định" : tagMap[newAddressData.tag] || "Địa chỉ phụ",
+    // Chuẩn bị payload đúng với model Prisma Backend
+    const payload = {
+      recipientName: newAddressData.recipientName.trim(),
+      phoneNumber: newAddressData.phoneNumber.trim(),
+      street: newAddressData.street.trim(),
+      ward: newAddressData.ward,
+      district: newAddressData.district,
+      city: newAddressData.city,
+      note: newAddressData.deliveryNote,
+      label: newAddressData.tag.toUpperCase(), // "HOME", "OFFICE", "OTHER"
       isDefault: newAddressData.isDefault,
-      address: fullAddr,
-      recipient: newAddressData.recipientName.trim(),
-      phone: newAddressData.phoneNumber.trim(),
     };
 
-    setAddresses((prev) => {
-      let updated = prev;
-      if (newAddressData.isDefault) {
-        updated = updated.map((a) => ({
-          ...a,
-          isDefault: false,
-          tag: a.tag === "Địa chỉ mặc định" ? "Địa chỉ phụ" : a.tag,
-        }));
+    try {
+      if (editingAddressId) {
+        // Trường hợp đang SỬA
+        await authApi.updateAddress(editingAddressId, payload);
+        alert("Cập nhật địa chỉ thành công!");
+      } else {
+        // Trường hợp THÊM MỚI
+        await authApi.createAddress(payload);
+        alert("Thêm địa chỉ mới thành công!");
       }
-      return [...updated, newAddr];
-    });
-
-    setShowAddressModal(false);
+      setShowAddressModal(false);
+      setEditingAddressId(null);
+      fetchAddresses(); // Tải lại danh sách mới nhất từ server
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || "Đã xảy ra lỗi khi lưu địa chỉ");
+    }
   };
 
+  const handleOpenEditAddress = (addr) => {
+    setEditingAddressId(addr.id);
+    setNewAddressData({
+      recipientName: addr.recipientName || addr.recipient || "",
+      phoneNumber: addr.phoneNumber || addr.phone || "",
+      city: addr.city || "Hà Nội",
+      district: addr.district || "Thanh Xuân",
+      ward: addr.ward || "Khương Mai",
+      street: addr.street || "",
+      deliveryNote: addr.note || addr.deliveryNote || "",
+      tag: (addr.label || "office").toLowerCase(),
+      isDefault: addr.isDefault || false,
+    });
+    setShowAddressModal(true);
+  };
   // Save changes
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -712,7 +1094,7 @@ export default function UserProfile({
                 {/* Vertical Navigation Menu */}
                 <nav className="rounded-xl bg-surface-container-lowest p-space-xs shadow-sm flex flex-col gap-1">
                   <button
-                    onClick={() => setActiveTab("profile")}
+                    onClick={() => scrollToSection("profile", profileSectionRef)}
                     className={`w-full flex items-center justify-between px-space-md py-space-sm rounded-lg font-label-lg text-label-lg transition-all border-0 cursor-pointer ${activeTab === "profile"
                       ? "bg-primary-container text-on-primary shadow-sm"
                       : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface bg-transparent"
@@ -734,7 +1116,7 @@ export default function UserProfile({
                   </button>
 
                   <button
-                    onClick={() => setActiveTab("addresses")}
+                    onClick={() => scrollToSection("addresses", addressSectionRef)}
                     className={`w-full flex items-center justify-between px-space-md py-space-sm rounded-lg font-label-lg text-label-lg transition-colors border-0 cursor-pointer ${activeTab === "addresses"
                       ? "bg-primary-container text-on-primary shadow-sm"
                       : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface bg-transparent"
@@ -753,7 +1135,7 @@ export default function UserProfile({
                   </button>
 
                   <button
-                    onClick={() => setActiveTab("orders")}
+                    onClick={() => scrollToSection("orders", ordersSectionRef)}
                     className={`w-full flex items-center justify-between px-space-md py-space-sm rounded-lg font-label-lg text-label-lg transition-colors border-0 cursor-pointer ${activeTab === "orders"
                       ? "bg-primary-container text-on-primary shadow-sm"
                       : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface bg-transparent"
@@ -766,8 +1148,10 @@ export default function UserProfile({
                       </span>
                       <span className="truncate">Lịch sử đơn & Trực tiếp</span>
                     </div>
-                    <span className="font-label-sm text-[11px] px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-bold animate-pulse">
-                      1 đơn đang giao
+                    <span className={`font-label-sm text-[11px] px-2 py-0.5 rounded-full font-bold ${
+                      activeOrdersCount > 0 ? "bg-secondary-container text-on-secondary-container animate-pulse" : "bg-surface-container text-on-surface-variant"
+                    }`}>
+                      {activeOrdersCount > 0 ? `${activeOrdersCount} đơn đang giao` : `${allOrders.length} đơn`}
                     </span>
                   </button>
 
@@ -807,8 +1191,11 @@ export default function UserProfile({
                   </button>
 
                   <button
-                    onClick={() => setActiveTab("security")}
-                    className="w-full flex items-center justify-between px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-lg text-label-lg transition-colors bg-transparent border-0 cursor-pointer"
+                    onClick={() => scrollToSection("security", securitySectionRef)}
+                    className={`w-full flex items-center justify-between px-space-md py-space-sm rounded-lg font-label-lg text-label-lg transition-colors border-0 cursor-pointer ${activeTab === "security"
+                      ? "bg-primary-container text-on-primary shadow-sm"
+                      : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface bg-transparent"
+                      }`}
                     type="button"
                   >
                     <div className="flex items-center gap-space-sm min-w-0">
@@ -827,6 +1214,7 @@ export default function UserProfile({
                     className="w-full flex items-center justify-between px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-lg text-label-lg transition-colors bg-transparent border-0 cursor-pointer"
                     type="button"
                   >
+
                     <div className="flex items-center gap-space-sm min-w-0">
                       <span className="material-symbols-outlined text-[20px]">
                         notifications_active
@@ -918,7 +1306,11 @@ export default function UserProfile({
                 </div>
 
                 {/* CARD 1: AVATAR & BASIC DETAILS */}
-                <div className="rounded-xl bg-surface-container-lowest p-space-lg lg:p-space-xl shadow-sm flex flex-col gap-space-lg">
+                <div
+                  ref={profileSectionRef}
+                  id="profile-section"
+                  className="rounded-xl bg-surface-container-lowest p-space-lg lg:p-space-xl shadow-sm flex flex-col gap-space-lg scroll-mt-24"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-space-xs">
                       <span className="w-2 h-6 rounded-full bg-primary-container" />
@@ -1091,7 +1483,11 @@ export default function UserProfile({
                 </div>
 
                 {/* CARD 2: CONTACT & SECURITY */}
-                <div className="rounded-xl bg-surface-container-lowest p-space-lg lg:p-space-xl shadow-sm flex flex-col gap-space-lg">
+                <div
+                  ref={securitySectionRef}
+                  id="security-section"
+                  className="rounded-xl bg-surface-container-lowest p-space-lg lg:p-space-xl shadow-sm flex flex-col gap-space-lg scroll-mt-24"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-space-xs">
                       <span className="w-2 h-6 rounded-full bg-primary-container" />
@@ -1197,11 +1593,15 @@ export default function UserProfile({
                   </div>
 
                   {/* Social / SSO Accounts */}
-                  
+
                 </div>
 
                 {/* CARD 3: SAVED DELIVERY ADDRESS BOOK */}
-                <div className="rounded-xl bg-surface-container-lowest p-space-lg lg:p-space-xl shadow-sm flex flex-col gap-space-lg">
+                <div
+                  ref={addressSectionRef}
+                  id="address-section"
+                  className="rounded-xl bg-surface-container-lowest p-space-lg lg:p-space-xl shadow-sm flex flex-col gap-space-lg scroll-mt-24"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-space-xs">
                       <span className="w-2 h-6 rounded-full bg-primary-container" />
@@ -1274,19 +1674,7 @@ export default function UserProfile({
                           )}
                           <div className="flex items-center gap-1">
                             <button
-                              onClick={() => {
-                                const newTitle = prompt(
-                                  "Đổi tên địa chỉ:",
-                                  addr.title
-                                );
-                                if (newTitle) {
-                                  setAddresses((prev) =>
-                                    prev.map((a) =>
-                                      a.id === addr.id ? { ...a, title: newTitle } : a
-                                    )
-                                  );
-                                }
-                              }}
+                              onClick={() => handleOpenEditAddress(addr)}
                               className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
                               title="Chỉnh sửa"
                               type="button"
@@ -1309,6 +1697,323 @@ export default function UserProfile({
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* CARD 4: 3 ĐƠN HÀNG GẦN NHẤT */}
+                <div
+                  ref={ordersSectionRef}
+                  id="orders-section"
+                  className="rounded-xl bg-surface-container-lowest p-space-lg lg:p-space-xl shadow-sm flex flex-col gap-space-lg scroll-mt-24 border border-surface-container"
+                >
+                  {/* Card Header */}
+                  <div className="flex flex-wrap items-center justify-between gap-space-sm pb-space-xs border-b border-surface-container">
+                    <div className="flex items-center gap-space-xs">
+                      <span className="w-2 h-6 rounded-full bg-primary-container" />
+                      <div>
+                        <h3 className="font-title-lg text-title-lg text-primary font-bold flex items-center gap-2 m-0">
+                          4. Lịch Sử Đơn Hàng Gần Đây
+                        </h3>
+                        <p className="font-body-sm text-[12px] text-on-surface-variant m-0 mt-0.5">
+                          Hiển thị 3 đơn đặt gần nhất. Theo dõi giao nhận và gọi lại món yêu thích.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-space-xs">
+                      <button
+                        onClick={() => {
+                          if (onViewAllOrders) onViewAllOrders();
+                          else window.location.hash = "orders";
+                        }}
+                        className="text-primary hover:text-tertiary font-label-md text-label-md font-semibold flex items-center gap-1 hover:underline transition-all bg-transparent border-0 cursor-pointer"
+                        type="button"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+                        <span>Xem tất cả ({allOrders.length} đơn)</span>
+                        <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 3 Most Recent Orders List */}
+                  <div className="flex flex-col gap-space-md">
+                    {allOrders.slice(0, 3).map((order) => {
+                      const isDelivering = order.status === "DELIVERING";
+                      const isPreparing = order.status === "PREPARING";
+                      const isPending = order.status === "PENDING";
+                      const isCompleted = order.status === "COMPLETED";
+                      const isCancelled = order.status === "CANCELLED";
+
+                      return (
+                        <div
+                          key={order.orderCode || order.id}
+                          className={`p-space-md md:p-space-lg rounded-xl bg-surface-container-low border transition-all shadow-sm ${
+                            isDelivering
+                              ? "border-secondary/50 ring-1 ring-secondary/20 shadow-md"
+                              : "border-outline-variant/60 hover:border-primary/40"
+                          }`}
+                        >
+                          {/* Order Header Badge Row */}
+                          <div className="flex flex-wrap items-center justify-between gap-space-xs pb-space-xs border-b border-surface-container">
+                            <div className="flex flex-wrap items-center gap-space-xs">
+                              <span className="font-label-lg text-label-lg font-bold text-primary font-mono">
+                                #{order.orderCode}
+                              </span>
+                              <span className="text-outline">•</span>
+                              <span className="font-body-sm text-[12px] text-on-surface-variant flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[14px]">schedule</span>
+                                {formatOrderDate(order.createdAt)}
+                              </span>
+                              <span className="text-outline hidden sm:inline">•</span>
+                              <span className="bg-primary/10 text-primary font-label-sm text-[11px] px-2 py-0.5 rounded-full hidden sm:flex items-center gap-1 font-semibold">
+                                <span className="material-symbols-outlined text-[13px]">
+                                  {order.shippingAddress?.includes("quầy") ? "storefront" : "electric_moped"}
+                                </span>
+                                {order.shippingAddress?.includes("quầy") ? "Tại quầy" : "Giao tận nơi"}
+                              </span>
+                            </div>
+
+                            {/* Status Badge */}
+                            <div>
+                              {isDelivering && (
+                                <div className="inline-flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-[11px] font-bold shadow-sm">
+                                  <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+                                  </span>
+                                  <span>Đang giao hàng (Tài xế đang đến)</span>
+                                </div>
+                              )}
+                              {isPreparing && (
+                                <div className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-[11px] font-bold shadow-sm">
+                                  <span className="material-symbols-outlined text-[14px] animate-spin">sync</span>
+                                  <span>Barista đang pha chế</span>
+                                </div>
+                              )}
+                              {isPending && (
+                                <div className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-[11px] font-semibold">
+                                  <span className="material-symbols-outlined text-[14px]">hourglass_top</span>
+                                  <span>Chờ tiếp nhận</span>
+                                </div>
+                              )}
+                              {isCompleted && (
+                                <div className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-secondary-container/60 text-secondary font-label-sm text-[11px] font-semibold">
+                                  <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                    check_circle
+                                  </span>
+                                  <span>Giao hàng thành công</span>
+                                </div>
+                              )}
+                              {isCancelled && (
+                                <div className="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-[11px] font-semibold">
+                                  <span className="material-symbols-outlined text-[14px]">cancel</span>
+                                  <span>Đơn đã hủy</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Live Stepper Tracker for active orders */}
+                          {(isDelivering || isPreparing || isPending) && (
+                            <div className="my-space-sm p-space-sm rounded-xl bg-surface-container-lowest/80 border border-outline-variant/30">
+                              <div className="flex items-center justify-between relative px-2">
+                                <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-surface-container-highest z-0"></div>
+                                <div
+                                  className="absolute left-6 top-1/2 -translate-y-1/2 h-1 bg-secondary z-0 transition-all duration-500"
+                                  style={{
+                                    width: isPending ? "15%" : isPreparing ? "50%" : "80%",
+                                  }}
+                                ></div>
+
+                                {/* Step 1 */}
+                                <div className="relative z-10 flex flex-col items-center">
+                                  <div className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-sm text-[14px]">
+                                    <span className="material-symbols-outlined text-[16px]">receipt</span>
+                                  </div>
+                                  <span className="font-label-sm text-[10px] text-primary mt-1 font-semibold">Đã nhận</span>
+                                </div>
+
+                                {/* Step 2 */}
+                                <div className="relative z-10 flex flex-col items-center">
+                                  <div
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm text-[14px] ${
+                                      isPreparing || isDelivering ? "bg-secondary text-on-secondary" : "bg-surface-container text-outline"
+                                    }`}
+                                  >
+                                    <span className="material-symbols-outlined text-[16px]">blender</span>
+                                  </div>
+                                  <span className={`font-label-sm text-[10px] mt-1 font-semibold ${isPreparing || isDelivering ? "text-primary" : "text-outline"}`}>
+                                    Pha chế
+                                  </span>
+                                </div>
+
+                                {/* Step 3 */}
+                                <div className="relative z-10 flex flex-col items-center">
+                                  <div
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md text-[14px] ${
+                                      isDelivering
+                                        ? "bg-secondary text-on-secondary ring-4 ring-secondary-container"
+                                        : "bg-surface-container text-outline"
+                                    }`}
+                                  >
+                                    <span className="material-symbols-outlined text-[16px]">two_wheeler</span>
+                                  </div>
+                                  <span className={`font-label-sm text-[10px] mt-1 font-bold ${isDelivering ? "text-secondary" : "text-outline"}`}>
+                                    Đang giao
+                                  </span>
+                                </div>
+
+                                {/* Step 4 */}
+                                <div className="relative z-10 flex flex-col items-center">
+                                  <div className="w-8 h-8 rounded-full bg-surface-container text-outline flex items-center justify-center shadow-sm text-[14px]">
+                                    <span className="material-symbols-outlined text-[16px]">done_all</span>
+                                  </div>
+                                  <span className="font-label-sm text-[10px] text-outline mt-1">Hoàn tất</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Order Items & Financials Grid */}
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-sm pt-space-xs">
+                            {/* Drinks list */}
+                            <div className="flex flex-col gap-2 min-w-0 flex-1">
+                              {order.items.map((item, idx) => (
+                                <div key={idx} className="flex items-start gap-space-xs">
+                                  <img
+                                    src={item.image}
+                                    alt={item.name}
+                                    className="w-12 h-12 rounded-lg object-cover shrink-0 shadow-sm border border-outline-variant/30"
+                                    onError={(e) => {
+                                      e.target.src =
+                                        "https://lh3.googleusercontent.com/aida-public/AB6AXuDdMxKFz8br9A39E0teaeHqEzquEMikNt5F_Kzyc-YpEq2rfj7Rgi9w-cvCnaCF6sPoof7JNpcbuNHgmPwbONA4F0BZ7IYQeDpc6BPWhf16i3UPrd5oCB_xTjHGW4yzj2k2iLobsc4_g4yboYNq8i1OCt5-8GlnjoMZ4pnOFIFkIACP5mx5dmzVXDujf-GtxayOlbM1KIveA2AfI4QRkrYhva_5caYa_D-VCBrOfDsvYcsNU80rfAI3Vw";
+                                    }}
+                                  />
+                                  <div className="flex flex-col min-w-0 flex-1">
+                                    <div className="flex items-baseline justify-between gap-2">
+                                      <div className="flex items-center gap-1.5 min-w-0">
+                                        <span className="font-label-sm text-[11px] font-bold text-primary bg-surface-container px-1.5 py-0.2 rounded shrink-0">
+                                          {item.quantity}x
+                                        </span>
+                                        <span className="font-label-md text-label-md font-bold text-primary truncate">
+                                          {item.name}
+                                        </span>
+                                      </div>
+                                      <span className="font-label-md text-label-md text-primary font-semibold shrink-0">
+                                        {formatCurrency(item.unitPrice * item.quantity)}
+                                      </span>
+                                    </div>
+                                    <p className="font-body-sm text-[11px] text-on-surface-variant m-0 mt-0.5">
+                                      {item.sizeName} {item.sweetness ? `• ${item.sweetness}` : ""} {item.ice ? `• ${item.ice}` : ""}
+                                      {item.toppings?.length > 0 ? ` • ${item.toppings.join(", ")}` : ""}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+
+                              {order.note && (
+                                <div className="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-[11px] italic bg-surface-container-lowest/80 px-2 py-1 rounded-md mt-1">
+                                  <span className="material-symbols-outlined text-[14px] text-on-tertiary-container">edit_note</span>
+                                  <span>Ghi chú: "{order.note}"</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Price and status summary column */}
+                            <div className="flex md:flex-col items-end justify-between md:justify-center border-t md:border-t-0 border-surface-container pt-2 md:pt-0 shrink-0 md:pl-space-md md:border-l md:border-surface-container/60">
+                              <span className="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider">
+                                Tổng cộng ({order.items.reduce((s, it) => s + (it.quantity || 1), 0)} món)
+                              </span>
+                              <span className="font-title-lg text-title-lg text-primary font-bold">
+                                {formatCurrency(order.totalAmount)}
+                              </span>
+                              <span className="font-label-sm text-[11px] text-secondary font-semibold flex items-center gap-1 mt-0.5">
+                                <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                  eco
+                                </span>
+                                +{order.brewPoints || 10} Hạt Brew
+                              </span>
+                              <span className="font-body-sm text-[11px] text-on-surface-variant mt-0.5">
+                                {order.paymentMethod === "VISA"
+                                  ? "Thẻ tín dụng / Visa"
+                                  : order.paymentMethod === "MOMO"
+                                  ? "Ví điện tử MoMo"
+                                  : order.paymentMethod === "vietqr" || order.paymentMethod === "PAYOS"
+                                  ? "Quét mã VietQR"
+                                  : "Tiền mặt khi nhận (COD)"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Order Footer & Actions */}
+                          <div className="flex flex-wrap items-center justify-between gap-space-xs pt-space-xs mt-space-xs border-t border-surface-container/80">
+                            <span className="font-body-sm text-[11px] text-on-surface-variant flex items-center gap-1 truncate max-w-md">
+                              <span className="material-symbols-outlined text-[15px] text-primary shrink-0">
+                                location_on
+                              </span>
+                              <span className="truncate">
+                                Giao tới: <strong>{order.shippingAddress}</strong>
+                              </span>
+                            </span>
+
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => setSelectedOrderForDetail(order)}
+                                className="px-space-md py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold transition-colors border-0 cursor-pointer flex items-center gap-1"
+                                type="button"
+                              >
+                                <span className="material-symbols-outlined text-[15px]">info</span>
+                                <span>Chi tiết</span>
+                              </button>
+
+                              <button
+                                onClick={() => handleReorder(order)}
+                                className="px-space-md py-1 rounded-full bg-surface-container hover:bg-primary-container hover:text-on-primary text-primary font-label-sm text-label-sm font-semibold transition-all border-0 cursor-pointer flex items-center gap-1"
+                                type="button"
+                              >
+                                <span className="material-symbols-outlined text-[15px]">replay</span>
+                                <span>Đặt lại</span>
+                              </button>
+
+                              {(isDelivering || isPreparing) && (
+                                <button
+                                  onClick={() => setSelectedOrderForDetail(order)}
+                                  className="px-space-md py-1 rounded-full bg-primary-container text-on-primary hover:bg-tertiary-container font-label-sm text-label-sm font-semibold transition-all shadow-sm flex items-center gap-1 border-0 cursor-pointer"
+                                  type="button"
+                                >
+                                  <span className="material-symbols-outlined text-[15px]">near_me</span>
+                                  <span>Theo dõi</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Banner redirecting to full order history page */}
+                  <div className="p-space-md rounded-xl bg-surface-container-low border border-outline-variant/60 flex flex-col sm:flex-row items-center justify-between gap-space-sm mt-space-xs">
+                    <div className="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-[13px]">
+                      <span className="material-symbols-outlined text-[20px] text-primary shrink-0">
+                        history
+                      </span>
+                      <span>
+                        Đang hiển thị 3 đơn gần nhất trong tổng số <strong>{allOrders.length} đơn hàng</strong> của bạn.
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (onViewAllOrders) onViewAllOrders();
+                        else window.location.hash = "orders";
+                      }}
+                      className="px-space-lg py-space-xs rounded-full bg-primary-container text-on-primary hover:bg-tertiary-container font-label-md text-label-md font-semibold transition-all shadow-sm border-0 cursor-pointer flex items-center gap-1.5 shrink-0"
+                      type="button"
+                    >
+                      <span>Xem toàn bộ lịch sử đơn hàng</span>
+                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </button>
                   </div>
                 </div>
 
@@ -1829,7 +2534,7 @@ export default function UserProfile({
               <div className="flex items-center gap-space-xs">
                 <div className="w-9 h-9 rounded-full bg-primary-container text-[#ffdcc3] flex items-center justify-center shrink-0">
                   <span className="material-symbols-outlined text-[20px]">
-                    add_location_alt
+                    {editingAddressId ? "edit_location_alt" : "add_location_alt"}
                   </span>
                 </div>
                 <div>
@@ -1837,16 +2542,21 @@ export default function UserProfile({
                     id="address-modal-title"
                     className="font-headline-sm text-headline-sm text-primary font-serif font-bold leading-tight m-0"
                   >
-                    Thêm Địa Chỉ Giao Hàng Mới
+                    {editingAddressId ? "Chỉnh Sửa Địa Chỉ Giao Hàng" : "Thêm Địa Chỉ Giao Hàng Mới"}
                   </h3>
                   <p className="font-body-sm text-[12px] text-on-surface-variant m-0">
-                    Lưu thông tin giao hàng để đặt món nhanh chóng hơn tại Velvet &amp; Brew
+                    {editingAddressId
+                      ? "Cập nhật thông tin nhận đồ uống để tài xế giao hàng chính xác và nhanh chóng"
+                      : "Lưu thông tin giao hàng để đặt món nhanh chóng hơn tại Velvet & Brew"}
                   </p>
                 </div>
               </div>
               <button
                 id="close-address-modal-x"
-                onClick={() => setShowAddressModal(false)}
+                onClick={() => {
+                  setShowAddressModal(false);
+                  setEditingAddressId(null);
+                }}
                 className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
                 title="Đóng hộp thoại"
                 type="button"
@@ -2050,8 +2760,8 @@ export default function UserProfile({
                 <div className="grid grid-cols-3 gap-space-xs">
                   <label
                     className={`flex items-center justify-center gap-1.5 p-space-xs rounded-lg border cursor-pointer transition-all font-label-md text-label-md ${newAddressData.tag === "home"
-                        ? "border-primary bg-primary-container text-on-primary shadow-sm"
-                        : "border-outline-variant/60 bg-surface-container-low text-on-surface-variant hover:border-primary"
+                      ? "border-primary bg-primary-container text-on-primary shadow-sm"
+                      : "border-outline-variant/60 bg-surface-container-low text-on-surface-variant hover:border-primary"
                       }`}
                   >
                     <input
@@ -2067,8 +2777,8 @@ export default function UserProfile({
                   </label>
                   <label
                     className={`flex items-center justify-center gap-1.5 p-space-xs rounded-lg border cursor-pointer transition-all font-label-md text-label-md ${newAddressData.tag === "office"
-                        ? "border-primary bg-primary-container text-on-primary shadow-sm"
-                        : "border-outline-variant/60 bg-surface-container-low text-on-surface-variant hover:border-primary"
+                      ? "border-primary bg-primary-container text-on-primary shadow-sm"
+                      : "border-outline-variant/60 bg-surface-container-low text-on-surface-variant hover:border-primary"
                       }`}
                   >
                     <input
@@ -2084,8 +2794,8 @@ export default function UserProfile({
                   </label>
                   <label
                     className={`flex items-center justify-center gap-1.5 p-space-xs rounded-lg border cursor-pointer transition-all font-label-md text-label-md ${newAddressData.tag === "other"
-                        ? "border-primary bg-primary-container text-on-primary shadow-sm"
-                        : "border-outline-variant/60 bg-surface-container-low text-on-surface-variant hover:border-primary"
+                      ? "border-primary bg-primary-container text-on-primary shadow-sm"
+                      : "border-outline-variant/60 bg-surface-container-low text-on-surface-variant hover:border-primary"
                       }`}
                   >
                     <input
@@ -2126,17 +2836,49 @@ export default function UserProfile({
 
             {/* Footer Modal */}
             <div className="flex items-center justify-between px-space-lg py-space-md border-t border-surface-container bg-surface-container-low">
-              <button
-                id="btn-cancel-address"
-                onClick={() => setShowAddressModal(false)}
-                className="px-space-md py-space-xs rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
-                type="button"
-              >
-                Hủy bỏ
-              </button>
-              <div className="flex items-center gap-space-xs">
+              {editingAddressId ? (
                 <button
-                  id="btn-save-address"
+                  id="btn-delete-address"
+                  onClick={async () => {
+                    const idToDelete = editingAddressId;
+                    await handleDeleteAddress(idToDelete);
+                  }}
+                  className="px-space-md py-space-xs rounded-full bg-error-container/40 hover:bg-error hover:text-on-error text-error font-label-md text-label-md transition-colors flex items-center gap-1.5 border-0 cursor-pointer"
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[18px]">delete</span>
+                  <span>Xóa địa chỉ này</span>
+                </button>
+              ) : (
+                <button
+                  id="btn-cancel-address"
+                  onClick={() => {
+                    setShowAddressModal(false);
+                    setEditingAddressId(null);
+                  }}
+                  className="px-space-md py-space-xs rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
+                  type="button"
+                >
+                  Hủy bỏ
+                </button>
+              )}
+
+              <div className="flex items-center gap-space-xs">
+                {editingAddressId && (
+                  <button
+                    id="btn-cancel-edit-address"
+                    onClick={() => {
+                      setShowAddressModal(false);
+                      setEditingAddressId(null);
+                    }}
+                    className="px-space-md py-space-xs rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
+                    type="button"
+                  >
+                    Hủy bỏ
+                  </button>
+                )}
+                <button
+                  id={editingAddressId ? "btn-save-edit-address" : "btn-save-address"}
                   onClick={handleSaveNewAddress}
                   className="px-space-xl py-space-xs rounded-full bg-primary-container text-on-primary font-label-md text-label-md font-semibold hover:bg-tertiary-container shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-1.5 border-0 cursor-pointer"
                   type="button"
@@ -2144,13 +2886,350 @@ export default function UserProfile({
                   <span className="material-symbols-outlined text-[18px] text-[#ffdcc3]">
                     check_circle
                   </span>
-                  <span>Lưu Địa Chỉ</span>
+                  <span>{editingAddressId ? "Cập Nhật Địa Chỉ" : "Lưu Địa Chỉ"}</span>
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* ================= MODAL CHI TIẾT ĐƠN HÀNG & THEO DÕI TRỰC TIẾP ================= */}
+      {selectedOrderForDetail && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-margin-mobile md:p-space-xl bg-[#271310]/60 backdrop-blur-sm transition-all duration-300"
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedOrderForDetail(null);
+          }}
+        >
+          <div className="relative w-full max-w-2xl bg-surface-container-lowest rounded-2xl shadow-2xl border border-surface-container-high overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95">
+            {/* Header */}
+            <div className="flex items-center justify-between px-space-lg py-space-md border-b border-surface-container bg-surface-container-low">
+              <div className="flex items-center gap-space-xs">
+                <div className="w-10 h-10 rounded-full bg-primary-container text-[#ffdcc3] flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[22px]">receipt_long</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-title-lg text-title-lg text-primary font-bold m-0 font-mono">
+                      #{selectedOrderForDetail.orderCode}
+                    </h3>
+                    <span className="font-label-sm text-[11px] px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-semibold">
+                      {selectedOrderForDetail.status === "DELIVERING"
+                        ? "Đang giao hàng"
+                        : selectedOrderForDetail.status === "PREPARING"
+                        ? "Đang pha chế"
+                        : selectedOrderForDetail.status === "COMPLETED"
+                        ? "Đã hoàn tất"
+                        : selectedOrderForDetail.status === "CANCELLED"
+                        ? "Đã hủy"
+                        : "Chờ tiếp nhận"}
+                    </span>
+                  </div>
+                  <p className="font-body-sm text-[12px] text-on-surface-variant m-0 mt-0.5">
+                    Đặt lúc: {formatOrderDate(selectedOrderForDetail.createdAt)}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedOrderForDetail(null)}
+                className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
+                title="Đóng hộp thoại"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-space-lg overflow-y-auto flex flex-col gap-space-md">
+              {/* Stepper Progress */}
+              <div className="p-space-md rounded-xl bg-surface-container-low border border-outline-variant/40">
+                <span className="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant block mb-2 font-semibold">
+                  Tiến trình đơn hàng
+                </span>
+                <div className="flex items-center justify-between relative px-2">
+                  <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-surface-container-highest z-0"></div>
+                  <div
+                    className="absolute left-6 top-1/2 -translate-y-1/2 h-1 bg-secondary z-0 transition-all duration-500"
+                    style={{
+                      width:
+                        selectedOrderForDetail.status === "PENDING"
+                          ? "15%"
+                          : selectedOrderForDetail.status === "PREPARING"
+                          ? "50%"
+                          : selectedOrderForDetail.status === "DELIVERING"
+                          ? "80%"
+                          : "100%",
+                    }}
+                  ></div>
+
+                  {/* Step 1 */}
+                  <div className="relative z-10 flex flex-col items-center">
+                    <div className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-sm text-[14px]">
+                      <span className="material-symbols-outlined text-[16px]">receipt</span>
+                    </div>
+                    <span className="font-label-sm text-[11px] text-primary mt-1 font-semibold">Đã nhận</span>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div className="relative z-10 flex flex-col items-center">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm text-[14px] ${
+                        selectedOrderForDetail.status !== "PENDING"
+                          ? "bg-secondary text-on-secondary"
+                          : "bg-surface-container text-outline"
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">blender</span>
+                    </div>
+                    <span
+                      className={`font-label-sm text-[11px] mt-1 font-semibold ${
+                        selectedOrderForDetail.status !== "PENDING" ? "text-primary" : "text-outline"
+                      }`}
+                    >
+                      Pha chế
+                    </span>
+                  </div>
+
+                  {/* Step 3 */}
+                  <div className="relative z-10 flex flex-col items-center">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm text-[14px] ${
+                        selectedOrderForDetail.status === "DELIVERING" || selectedOrderForDetail.status === "COMPLETED"
+                          ? "bg-secondary text-on-secondary ring-4 ring-secondary-container"
+                          : "bg-surface-container text-outline"
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">two_wheeler</span>
+                    </div>
+                    <span
+                      className={`font-label-sm text-[11px] mt-1 font-semibold ${
+                        selectedOrderForDetail.status === "DELIVERING" || selectedOrderForDetail.status === "COMPLETED"
+                          ? "text-secondary font-bold"
+                          : "text-outline"
+                      }`}
+                    >
+                      Đang giao
+                    </span>
+                  </div>
+
+                  {/* Step 4 */}
+                  <div className="relative z-10 flex flex-col items-center">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm text-[14px] ${
+                        selectedOrderForDetail.status === "COMPLETED"
+                          ? "bg-secondary text-on-secondary"
+                          : "bg-surface-container text-outline"
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">done_all</span>
+                    </div>
+                    <span
+                      className={`font-label-sm text-[11px] mt-1 ${
+                        selectedOrderForDetail.status === "COMPLETED" ? "text-primary font-semibold" : "text-outline"
+                      }`}
+                    >
+                      Hoàn tất
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Driver info card (if delivering) */}
+              {selectedOrderForDetail.status === "DELIVERING" && (
+                <div className="p-space-sm rounded-xl bg-secondary-container/30 border border-secondary/40 flex items-center justify-between">
+                  <div className="flex items-center gap-space-sm">
+                    <div className="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-[20px]">two_wheeler</span>
+                    </div>
+                    <div>
+                      <p className="font-label-md text-label-md font-bold text-primary m-0">
+                        Tài xế: Nguyễn Văn Hùng
+                      </p>
+                      <p className="font-body-sm text-[12px] text-on-surface-variant m-0">
+                        Xe Honda Wave 29B1-882.14 • Cách bạn ~1.2km (10 phút)
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href="tel:0982345678"
+                    className="px-space-md py-1 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm font-semibold flex items-center gap-1 no-underline shadow-sm"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">call</span>
+                    <span>Gọi tài xế</span>
+                  </a>
+                </div>
+              )}
+
+              {/* Shipping Details */}
+              <div className="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-2">
+                <span className="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-semibold">
+                  Thông tin nhận hàng
+                </span>
+                <div className="flex items-start gap-2">
+                  <span className="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">
+                    location_on
+                  </span>
+                  <div>
+                    <p className="font-label-md text-label-md font-bold text-primary m-0">
+                      {selectedOrderForDetail.recipientName} • {selectedOrderForDetail.recipientPhone}
+                    </p>
+                    <p className="font-body-sm text-[13px] text-on-surface-variant m-0 mt-0.5">
+                      {selectedOrderForDetail.shippingAddress}
+                    </p>
+                  </div>
+                </div>
+                {selectedOrderForDetail.note && (
+                  <div className="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-[12px] italic bg-surface-container-lowest px-space-sm py-1.5 rounded-lg border border-outline-variant/30 mt-1">
+                    <span className="material-symbols-outlined text-[16px] text-on-tertiary-container">
+                      edit_note
+                    </span>
+                    <span>Ghi chú của bạn: "{selectedOrderForDetail.note}"</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Items List */}
+              <div className="flex flex-col gap-2">
+                <span className="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-semibold">
+                  Danh sách thức uống ({selectedOrderForDetail.items?.length || 0} món)
+                </span>
+                <div className="flex flex-col gap-2 bg-surface-container-low p-space-sm rounded-xl">
+                  {selectedOrderForDetail.items?.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between gap-space-sm py-1.5 border-b last:border-b-0 border-surface-container"
+                    >
+                      <div className="flex items-center gap-space-sm min-w-0">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-12 h-12 rounded-lg object-cover shrink-0 border border-outline-variant/30"
+                          onError={(e) => {
+                            e.target.src =
+                              "https://lh3.googleusercontent.com/aida-public/AB6AXuDdMxKFz8br9A39E0teaeHqEzquEMikNt5F_Kzyc-YpEq2rfj7Rgi9w-cvCnaCF6sPoof7JNpcbuNHgmPwbONA4F0BZ7IYQeDpc6BPWhf16i3UPrd5oCB_xTjHGW4yzj2k2iLobsc4_g4yboYNq8i1OCt5-8GlnjoMZ4pnOFIFkIACP5mx5dmzVXDujf-GtxayOlbM1KIveA2AfI4QRkrYhva_5caYa_D-VCBrOfDsvYcsNU80rfAI3Vw";
+                          }}
+                        />
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-label-md text-label-md font-bold text-primary truncate">
+                            {item.quantity}x {item.name}
+                          </span>
+                          <span className="font-body-sm text-[11px] text-on-surface-variant">
+                            {item.sizeName} {item.sweetness ? `• ${item.sweetness}` : ""} {item.ice ? `• ${item.ice}` : ""}
+                            {item.toppings?.length > 0 ? ` • ${item.toppings.join(", ")}` : ""}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="font-label-md text-label-md font-bold text-primary shrink-0">
+                        {formatCurrency(item.unitPrice * (item.quantity || 1))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Financial Calculation */}
+              <div className="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-1.5">
+                <div className="flex justify-between font-body-sm text-[12px] text-on-surface-variant">
+                  <span>Tạm tính thức uống:</span>
+                  <span>{formatCurrency(selectedOrderForDetail.subtotal)}</span>
+                </div>
+                <div className="flex justify-between font-body-sm text-[12px] text-on-surface-variant">
+                  <span>Phí giao hàng:</span>
+                  <span>
+                    {selectedOrderForDetail.shippingFee ? formatCurrency(selectedOrderForDetail.shippingFee) : "Miễn phí"}
+                  </span>
+                </div>
+                {selectedOrderForDetail.discountAmount > 0 && (
+                  <div className="flex justify-between font-body-sm text-[12px] text-secondary font-semibold">
+                    <span>Ưu đãi thành viên:</span>
+                    <span>-{formatCurrency(selectedOrderForDetail.discountAmount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-title-lg text-title-lg text-primary font-bold pt-1 border-t border-surface-container">
+                  <span>Tổng thanh toán:</span>
+                  <span className="text-primary font-extrabold">
+                    {formatCurrency(selectedOrderForDetail.totalAmount)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-on-surface-variant pt-1">
+                  <span>
+                    Phương thức:{" "}
+                    <strong>
+                      {selectedOrderForDetail.paymentMethod === "VISA"
+                        ? "Thẻ Visa / MasterCard"
+                        : selectedOrderForDetail.paymentMethod === "MOMO"
+                        ? "Ví điện tử MoMo"
+                        : selectedOrderForDetail.paymentMethod === "vietqr" || selectedOrderForDetail.paymentMethod === "PAYOS"
+                        ? "Quét mã VietQR"
+                        : "Tiền mặt khi nhận (COD)"}
+                    </strong>
+                  </span>
+                  <span className="text-secondary font-semibold flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[13px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                      eco
+                    </span>
+                    +{selectedOrderForDetail.brewPoints || 10} Hạt Brew
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-between px-space-lg py-space-md border-t border-surface-container bg-surface-container-low">
+              <button
+                onClick={() => setSelectedOrderForDetail(null)}
+                className="px-space-md py-space-xs rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-colors border-0 cursor-pointer"
+                type="button"
+              >
+                Đóng
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    handleReorder(selectedOrderForDetail);
+                    setSelectedOrderForDetail(null);
+                  }}
+                  className="px-space-lg py-space-xs rounded-full bg-primary-container text-on-primary font-label-md text-label-md font-semibold hover:bg-tertiary-container shadow-md transition-all flex items-center gap-1.5 border-0 cursor-pointer"
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[16px]">replay</span>
+                  <span>Đặt lại đơn này</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {orderNotificationToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-primary-container text-on-primary px-space-lg py-space-md rounded-2xl shadow-2xl flex items-center gap-space-sm border border-[#ffdcc3]/30 animate-in slide-in-from-bottom-5">
+          <span className="material-symbols-outlined text-[24px] text-secondary-fixed">
+            {orderNotificationToast.icon || "info"}
+          </span>
+          <div className="flex flex-col">
+            <span className="font-label-md text-label-md font-bold text-white">
+              {orderNotificationToast.title}
+            </span>
+            <span className="font-body-sm text-[12px] text-on-primary-container">
+              {orderNotificationToast.message}
+            </span>
+          </div>
+          <button
+            onClick={() => setOrderNotificationToast(null)}
+            className="w-6 h-6 rounded-full bg-surface-container/20 text-white flex items-center justify-center border-0 cursor-pointer ml-2 hover:bg-surface-container/40"
+            type="button"
+          >
+            <span className="material-symbols-outlined text-[14px]">close</span>
+          </button>
+        </div>
+      )}
     </div>
   );
-}
+};
+

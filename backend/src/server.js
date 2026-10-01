@@ -1,19 +1,23 @@
+require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const productRouter = require("./routes/productRouter");
 const userRoutes = require("./routes/userRoutes");
 const prisma = require("./config/db");
 const uploadRouter = require("./routes/uploadRoutes");
-require('dotenv').config();
+const paymentRoutes = require("./routes/paymentRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+
 const app = express();
 const port = 8080;
-
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Routes
+app.use("/api/orders", orderRoutes);
 
+app.use("/api/payment", paymentRoutes);
 app.use("/api/product", productRouter);
 app.use("/api/auth", userRoutes);
 app.use("/api", uploadRouter)

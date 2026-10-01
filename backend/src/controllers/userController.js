@@ -345,12 +345,134 @@ const createAddress = async (req, res) => {
   }
 }
 //TODO:sua xoa dia chi
+const updateAddress =async (req,res)=>{
+  try {
+    const addressId = parseInt(req.params.addressId, 10);
+    const { recipientName, phoneNumber, city, district, ward, street, note, label, isDefault } = req.body;
+    const userId = req.user.id;
+
+    const existAddress = await prisma.address.findUnique({
+      where: { id: addressId }
+    });
+
+    if (!existAddress) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy địa chỉ",
+      });
+    }
+
+    if (existAddress.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "Bạn không có quyền chỉnh sửa địa chỉ này",
+      });
+    }
+
+    if (isDefault) {
+      await prisma.address.updateMany({
+        where: { userId: userId },
+        data: { isDefault: false },
+      });
+    }
+
+    const updatedAddress = await prisma.address.update({
+      where: { id: addressId },
+      data: {
+        userId,
+        recipientName,
+        phoneNumber,
+        city,
+        district,
+        ward,
+        street,
+        note,
+        label,
+        isDefault: Boolean(isDefault),
+      }
+    });
+    return res.status(200).json({
+      success: true,
+      message: "Cập nhật địa chỉ thành công",
+      data: updatedAddress,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi hệ thống",
+      error: error.message,
+    })
+  }
+}
+const deleteAddress = async (req, res) => {
+  try {
+    const addressId = parseInt(req.params.addressId, 10);
+    const userId = req.user.id;
+
+    const existAddress = await prisma.address.findUnique({
+      where: { id: addressId },
+    });
+
+    if (!existAddress) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy địa chỉ",
+      });
+    }
+
+    if (existAddress.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "Bạn không có quyền xóa địa chỉ này",
+      });
+    }
+
+    // 1. Gỡ liên kết địa chỉ khỏi các đơn hàng cũ (đặt addressId về null) để tránh lỗi ràng buộc khóa ngoại MySQL
+    await prisma.order.updateMany({
+      where: { addressId: addressId },
+      data: { addressId: null },
+    });
+
+    // 2. Thực hiện xóa địa chỉ
+    const deletedAddress = await prisma.address.delete({
+      where: { id: addressId },
+    });
+
+    // 3. Nếu địa chỉ vừa xóa là mặc định, tự động chuyển 1 địa chỉ còn lại thành mặc định
+    if (existAddress.isDefault) {
+      const remainingAddress = await prisma.address.findFirst({
+        where: { userId: userId },
+      });
+      if (remainingAddress) {
+        await prisma.address.update({
+          where: { id: remainingAddress.id },
+          data: { isDefault: true },
+        });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Xóa địa chỉ thành công",
+      data: deletedAddress,
+    });
+  } catch (error) {
+    console.error("Lỗi xóa địa chỉ:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi hệ thống khi xóa địa chỉ",
+      error: error.message,
+    });
+  }
+};
 module.exports = {
   register,
   login,
   updateProfile,
   getProfile,
   googleLogin,
+  updateAddress,
   getAddress,
   createAddress,
+  deleteAddress,
 };
