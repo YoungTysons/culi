@@ -175,235 +175,44 @@ export default function UserProfile({
     }
   };
 
-  // Mẫu đơn hàng chuẩn thiết kế Velvet & Brew
-  const defaultMockOrders = [
-    {
-      id: 98241,
-      orderCode: "VB-98241",
-      createdAt: new Date().toISOString(),
-      status: "DELIVERING",
-      isPaid: true,
-      paymentMethod: "VISA",
-      shippingAddress: "Chung cư Artemis, Tầng 5, 03 Lê Trọng Tấn, P. Khương Mai, Q. Thanh Xuân, Hà Nội",
-      recipientName: fullName || "Nguyễn Minh Trí",
-      recipientPhone: phoneNumber || "0903 888 234",
-      note: "Cho xin thêm 2 ống hút giấy và ít đá riêng",
-      subtotal: 165000,
-      shippingFee: 20000,
-      discountAmount: 40000,
-      totalAmount: 145000,
-      brewPoints: 15,
-      deliveryTimeEstimate: "15-20 phút (Tài xế cách 1.2km)",
-      items: [
-        {
-          id: 101,
-          name: "Cà Phê Trứng Nướng Brulee",
-          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDdMxKFz8br9A39E0teaeHqEzquEMikNt5F_Kzyc-YpEq2rfj7Rgi9w-cvCnaCF6sPoof7JNpcbuNHgmPwbONA4F0BZ7IYQeDpc6BPWhf16i3UPrd5oCB_xTjHGW4yzj2k2iLobsc4_g4yboYNq8i1OCt5-8GlnjoMZ4pnOFIFkIACP5mx5dmzVXDujf-GtxayOlbM1KIveA2AfI4QRkrYhva_5caYa_D-VCBrOfDsvYcsNU80rfAI3Vw",
-          quantity: 1,
-          sizeName: "Size L",
-          sweetness: "50% đường",
-          ice: "Ít đá",
-          toppings: ["Trân châu hoàng kim", "Thạch pudding"],
-          unitPrice: 65000,
-        },
-        {
-          id: 102,
-          name: "Trà Sữa Oolong Nướng Rang Mộc",
-          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBCbe5hSL5WTGVXUf8LydC7rfsFlD2P2ggr-2waDg7boSlCqww05r5Svd7oSGIaBb02FpoOirzaZJvJEkBV93rgjC1csGm5vX3YnYji2qkVZQ4xBuv0_WvSTGkroTarOUdc2kxZk8HQpgp0249xQ55zh32YPirn0eefK65hmKTagj6k53UYrFzZElMakOSd7xXThx-YlQ-2QM-F687mTCw4--aI88SyNq9Ww9eh7QZk-h6c9ZX3bUnFvA",
-          quantity: 1,
-          sizeName: "Size M",
-          sweetness: "70% đường",
-          ice: "50% đá",
-          toppings: ["Thạch Espresso nướng"],
-          unitPrice: 55000,
-        },
-        {
-          id: 103,
-          name: "Bánh Croissant Hạnh Nhân Bơ Pháp",
-          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDgMQO1qbJqLhuL3iPsMcIDTG0SkiX_-l84-RnCAIsZ7AiP35Ntl93PwKR-nCrgevEaGSLCXlRM_39S9QrOuqV--UuKxvHvIbi24KEwfGm0VOkKJLxTaQo1wUVBMCEL4w_k7RloPElBf1mdFBquCqAw2_nBMV5NIsejM_B76grWB8tau3Ij7fAC65qLihL7q0IkkjgMT0Hk4rP94020FPFj2W-u9RIqcSSQq1e1PITZ4Oz9_Mg2tnp0qw",
-          quantity: 1,
-          sizeName: "Nóng giòn",
-          sweetness: "",
-          ice: "",
-          toppings: ["Bơ Pháp Elle & Vire"],
-          unitPrice: 45000,
-        },
-      ],
-    },
-    {
-      id: 98190,
-      orderCode: "VB-98190",
-      createdAt: "2024-10-24T08:45:00.000Z",
-      status: "PREPARING",
-      isPaid: true,
-      paymentMethod: "MOMO",
-      shippingAddress: "Lấy mang đi tại quầy Velvet & Brew 124 Phố Cổ, Hoàn Kiếm, Hà Nội",
-      recipientName: nickname || "Trí Nguyễn",
-      recipientPhone: phoneNumber || "0903 888 234",
-      note: "Để đá riêng, đóng nắp chống tràn mang đi",
-      subtotal: 120000,
-      shippingFee: 0,
-      discountAmount: 0,
-      totalAmount: 120000,
-      brewPoints: 12,
-      deliveryTimeEstimate: "Đang pha chế (Khoảng 5 phút)",
-      items: [
-        {
-          id: 104,
-          name: "Cold Brew Cam Sả Quế Thảo Mộc",
-          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAyDeekpkli4cFFc6N7oViWPHymJSZaCi4lceB_95Sk1qdRfcDI1-Cvw-NndZU77kzeTILErZnREq4RNu4f7Mzs104RvPeYzW69onZoewzixEyLcy07i_i-zTb7wWvJPO2iIzhZiEq_ErADXus1oWS1mkmxKviKKMp9Nujj-025_AGpADf7bx8Xm7WIxLt9LqCgdZWw007vxtlIjdAaeygOIOvk4lSmzc8eVCceM4xoBWCkh5MwauQf0w",
-          quantity: 2,
-          sizeName: "Size L",
-          sweetness: "Chuẩn",
-          ice: "Đá riêng",
-          toppings: ["Quế thanh & cam vàng"],
-          unitPrice: 60000,
-        },
-      ],
-    },
-    {
-      id: 97815,
-      orderCode: "VB-97815",
-      createdAt: "2024-10-22T15:20:00.000Z",
-      status: "COMPLETED",
-      isPaid: true,
-      paymentMethod: "MOMO",
-      shippingAddress: "Phòng 402, 124 Phố Huế, P. Hàng Bài, Q. Hoàn Kiếm, Hà Nội",
-      recipientName: nickname || "Trí Nguyễn (Lễ tân tầng 1)",
-      recipientPhone: phoneNumber || "0903 888 234",
-      subtotal: 185000,
-      shippingFee: 0,
-      totalAmount: 185000,
-      brewPoints: 19,
-      reviewRating: 5,
-      reviewComment: "Cà phê thơm đậm vị, bọt sữa cực mịn ngậy!",
-      items: [
-        {
-          id: 105,
-          name: "Latte Hạnh Nhân Macchiato Yến Mạch",
-          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCceJ032XSzChnNnnQTBq6Cpz84M9Nhc1NmFnpHQdBtEoLx_iL9yFyBr8jz8S2I6FRcv7vyKbKaObPcLw_qgN5mxWdqkEfnq0hARAcQIyfstm8h-MS7skoW8fV7I02FTsEWRjJuer2gTd7cM4b7uWkRyFaN0xkYR-GA4PkOuRdIKXDBnpPEvmeX1Suyj_gYqYEYFZMqSlr4nrRWI8mRMDECImHC61o_l72WtVnS3oFok_E_5Y8RoWj6xg",
-          quantity: 2,
-          sizeName: "Size L",
-          sweetness: "Ít ngọt",
-          ice: "Uống nóng",
-          toppings: ["Sữa hạt Hạnh nhân hữu cơ"],
-          unitPrice: 65000,
-        },
-        {
-          id: 106,
-          name: "Trà Shan Tuyết Cổ Thụ Mật Ong Rừng",
-          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCFFCKDGYgwQipvk0iLZwyKEjYzMqMxDkaQ1UO3KHZ9MHNQiujsgrOqKACVs1k6q4UY_IescnpJ5C8Kn88iWXH9Sx2v68N6Tc5t31l7LtddqJWoALfEg3w9ByyB9VOz08sqJFjmocgy4ivhcPWYSj33xWHByiMBrvvOa9p2UYVJwV685klG18NyMBHCgFV40briO-nzIvdVr6HEN0rIkNbuVFjGok1Llep2FfnmRclpA52NiiGOvzoOxQ",
-          quantity: 1,
-          sizeName: "Size M",
-          sweetness: "Chuẩn",
-          ice: "Nóng nhẹ",
-          toppings: ["Mật ong hoa rừng tự nhiên"],
-          unitPrice: 55000,
-        },
-      ],
-    },
-    {
-      id: 96204,
-      orderCode: "VB-96204",
-      createdAt: "2024-10-18T14:10:00.000Z",
-      status: "COMPLETED",
-      isPaid: true,
-      paymentMethod: "COD",
-      shippingAddress: "Cửa hàng Velvet & Brew 124 Phố Cổ, Q. Hoàn Kiếm, Hà Nội",
-      recipientName: fullName || "Nguyễn Minh Trí",
-      recipientPhone: phoneNumber || "0903 888 234",
-      subtotal: 58000,
-      shippingFee: 0,
-      totalAmount: 58000,
-      brewPoints: 6,
-      items: [
-        {
-          id: 107,
-          name: "Trà Sữa Thiết Quan Âm Kem Phô Mai Macchiato",
-          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBRJL49kbOfaFBCFZDYBNKW99XVAxvrCHMrOgHCxEKNsmNLmcPlEPbtkLApu3w5E6GqtV3HWoguAdnFvbPsTEpVhAUfepc3LS9PQzgNJP2K8mNQRdvRnDwezp6pk0IwHukgsHFMgcQ7CE0HyUB--0R9OT1J6lc-iXI0fR13_aqyYjThjsnwoqRsiKz6Y4D5FgKiWHaXQLPI70_wn4efbAnsHmHRpLsjJ3MldtB2z2F9Ga5XzHKEI1zfEA",
-          quantity: 1,
-          sizeName: "Size L",
-          sweetness: "30% đường",
-          ice: "Chuẩn",
-          toppings: ["Trân châu đen hoàng gia"],
-          unitPrice: 58000,
-        },
-      ],
-    },
-    {
-      id: 95112,
-      orderCode: "VB-95112",
-      createdAt: "2024-10-10T09:00:00.000Z",
-      status: "CANCELLED",
-      isPaid: false,
-      paymentMethod: "VNPAY",
-      shippingAddress: "Chung cư Artemis, Tầng 5, 03 Lê Trọng Tấn, Thanh Xuân, Hà Nội",
-      recipientName: fullName || "Nguyễn Minh Trí",
-      recipientPhone: phoneNumber || "0903 888 234",
-      subtotal: 110000,
-      shippingFee: 0,
-      totalAmount: 110000,
-      brewPoints: 0,
-      cancelReason: "Quý khách đổi ý địa chỉ giao hàng ngoài bán kính phục vụ 5km.",
-      refundStatus: "Đã hoàn 110.000đ về thẻ ngân hàng",
-      items: [
-        {
-          id: 108,
-          name: "Espresso Tonic Cam Vàng & Tiramisu Cacao Specialty",
-          image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAyDeekpkli4cFFc6N7oViWPHymJSZaCi4lceB_95Sk1qdRfcDI1-Cvw-NndZU77kzeTILErZnREq4RNu4f7Mzs104RvPeYzW69onZoewzixEyLcy07i_i-zTb7wWvJPO2iIzhZiEq_ErADXus1oWS1mkmxKviKKMp9Nujj-025_AGpADf7bx8Xm7WIxLt9LqCgdZWw007vxtlIjdAaeygOIOvk4lSmzc8eVCceM4xoBWCkh5MwauQf0w",
-          quantity: 1,
-          sizeName: "Size L",
-          sweetness: "Chuẩn",
-          ice: "Chuẩn",
-          toppings: [],
-          unitPrice: 110000,
-        },
-      ],
-    },
-  ];
-
-  // Kết hợp đơn thật trong database với mẫu thiết kế
-  const allOrders = [
-    ...orders.map((dbOrder) => ({
-      id: dbOrder.id,
-      orderCode: dbOrder.orderCode,
-      createdAt: dbOrder.createdAt,
-      status: dbOrder.status, // PENDING | PREPARING | DELIVERING | COMPLETED | CANCELLED
-      isPaid: dbOrder.isPaid,
-      paymentMethod: dbOrder.paymentMethod,
-      shippingAddress: dbOrder.shippingAddress,
-      recipientName: fullName || user?.fullName || "Khách Hàng",
-      recipientPhone: phoneNumber || user?.phoneNumber || "",
-      note: dbOrder.note || "",
-      subtotal: Number(dbOrder.subtotal) || Number(dbOrder.totalAmount) || 0,
-      shippingFee: Number(dbOrder.shippingFee) || 0,
-      totalAmount: Number(dbOrder.totalAmount) || 0,
-      brewPoints: Math.max(1, Math.round((Number(dbOrder.totalAmount) || 0) / 10000)),
-      deliveryTimeEstimate:
-        dbOrder.status === "DELIVERING"
-          ? "Tài xế đang giao (10-15 phút)"
-          : dbOrder.status === "PREPARING"
-          ? "Barista đang pha chế (5-10 phút)"
-          : null,
-      items:
-        dbOrder.items?.map((it) => ({
-          id: it.id,
-          name: it.product?.name || "Cà Phê Velvet & Brew",
-          image:
-            it.product?.image ||
-            "https://lh3.googleusercontent.com/aida-public/AB6AXuDdMxKFz8br9A39E0teaeHqEzquEMikNt5F_Kzyc-YpEq2rfj7Rgi9w-cvCnaCF6sPoof7JNpcbuNHgmPwbONA4F0BZ7IYQeDpc6BPWhf16i3UPrd5oCB_xTjHGW4yzj2k2iLobsc4_g4yboYNq8i1OCt5-8GlnjoMZ4pnOFIFkIACP5mx5dmzVXDujf-GtxayOlbM1KIveA2AfI4QRkrYhva_5caYa_D-VCBrOfDsvYcsNU80rfAI3Vw",
-          quantity: it.quantity || 1,
-          sizeName: it.sizeName || "Size M",
-          sweetness: it.sweetness || "Chuẩn",
-          ice: it.ice || "Chuẩn",
-          toppings: [],
-          unitPrice: Number(it.unitPrice) || 0,
-        })) || [],
-    })),
-    ...defaultMockOrders.filter(
-      (mock) => !orders.some((db) => db.orderCode === mock.orderCode)
-    ),
-  ];
+  // Lấy đơn hàng thực tế trong database
+  const allOrders = orders.map((dbOrder) => ({
+    id: dbOrder.id,
+    orderCode: dbOrder.orderCode,
+    createdAt: dbOrder.createdAt,
+    status: dbOrder.status, // PENDING | PREPARING | DELIVERING | COMPLETED | CANCELLED
+    isPaid: dbOrder.isPaid,
+    paymentMethod: dbOrder.paymentMethod,
+    shippingAddress: dbOrder.shippingAddress,
+    recipientName: fullName || user?.fullName || "Khách Hàng",
+    recipientPhone: phoneNumber || user?.phoneNumber || "",
+    note: dbOrder.note || "",
+    subtotal: Number(dbOrder.subtotal) || Number(dbOrder.totalAmount) || 0,
+    shippingFee: Number(dbOrder.shippingFee) || 0,
+    totalAmount: Number(dbOrder.totalAmount) || 0,
+    brewPoints: Math.max(1, Math.round((Number(dbOrder.totalAmount) || 0) / 10000)),
+    deliveryTimeEstimate:
+      dbOrder.status === "DELIVERING"
+        ? "Tài xế đang giao (10-15 phút)"
+        : dbOrder.status === "PREPARING"
+        ? "Barista đang pha chế (5-10 phút)"
+        : null,
+    items:
+      dbOrder.items?.map((it) => ({
+        id: it.id,
+        name: it.product?.name || "Cà Phê Velvet & Brew",
+        image:
+          it.product?.image ||
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuDdMxKFz8br9A39E0teaeHqEzquEMikNt5F_Kzyc-YpEq2rfj7Rgi9w-cvCnaCF6sPoof7JNpcbuNHgmPwbONA4F0BZ7IYQeDpc6BPWhf16i3UPrd5oCB_xTjHGW4yzj2k2iLobsc4_g4yboYNq8i1OCt5-8GlnjoMZ4pnOFIFkIACP5mx5dmzVXDujf-GtxayOlbM1KIveA2AfI4QRkrYhva_5caYa_D-VCBrOfDsvYcsNU80rfAI3Vw",
+        quantity: it.quantity || 1,
+        sizeName: it.sizeName || "Size M",
+        sweetness: it.sweetness || "Chuẩn",
+        toppings: (it.toppings || []).map(
+          (tp) => tp.topping?.name || tp.name || (typeof tp === "string" ? tp : "Topping")
+        ),
+        unitPrice: Number(it.unitPrice) || 0,
+      })) || [],
+  }));
 
   const activeOrdersCount = allOrders.filter(
     (o) => o.status === "DELIVERING" || o.status === "PREPARING" || o.status === "PENDING"
@@ -1738,7 +1547,20 @@ export default function UserProfile({
 
                   {/* 3 Most Recent Orders List */}
                   <div className="flex flex-col gap-space-md">
-                    {allOrders.slice(0, 3).map((order) => {
+                    {allOrders.length === 0 ? (
+                      <div className="p-space-xl text-center bg-surface-container-low rounded-xl border border-outline-variant/40 flex flex-col items-center justify-center">
+                        <span className="material-symbols-outlined text-[48px] text-outline mb-space-xs">
+                          inventory_2
+                        </span>
+                        <p className="font-headline-sm text-headline-sm text-primary font-bold m-0">
+                          Chưa có đơn hàng nào
+                        </p>
+                        <p className="font-body-sm text-body-sm text-on-surface-variant max-w-sm mt-space-2xs m-0">
+                          Lịch sử mua hàng của bạn đang trống. Các đơn hàng đặt thành công sẽ hiển thị tại đây.
+                        </p>
+                      </div>
+                    ) : (
+                      allOrders.slice(0, 3).map((order) => {
                       const isDelivering = order.status === "DELIVERING";
                       const isPreparing = order.status === "PREPARING";
                       const isPending = order.status === "PENDING";
@@ -1906,8 +1728,12 @@ export default function UserProfile({
                                     </div>
                                     <p className="font-body-sm text-[11px] text-on-surface-variant m-0 mt-0.5">
                                       {item.sizeName} {item.sweetness ? `• ${item.sweetness}` : ""} {item.ice ? `• ${item.ice}` : ""}
-                                      {item.toppings?.length > 0 ? ` • ${item.toppings.join(", ")}` : ""}
                                     </p>
+                                    {item.toppings?.length > 0 && (
+                                      <p className="font-body-sm text-[11px] text-primary font-medium m-0 mt-0.5">
+                                        + Topping: {item.toppings.join(", ")}
+                                      </p>
+                                    )}
                                   </div>
                                 </div>
                               ))}
@@ -1990,31 +1816,33 @@ export default function UserProfile({
                           </div>
                         </div>
                       );
-                    })}
+                    }))}
                   </div>
 
                   {/* Banner redirecting to full order history page */}
-                  <div className="p-space-md rounded-xl bg-surface-container-low border border-outline-variant/60 flex flex-col sm:flex-row items-center justify-between gap-space-sm mt-space-xs">
-                    <div className="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-[13px]">
-                      <span className="material-symbols-outlined text-[20px] text-primary shrink-0">
-                        history
-                      </span>
-                      <span>
-                        Đang hiển thị 3 đơn gần nhất trong tổng số <strong>{allOrders.length} đơn hàng</strong> của bạn.
-                      </span>
+                  {allOrders.length > 0 && (
+                    <div className="p-space-md rounded-xl bg-surface-container-low border border-outline-variant/60 flex flex-col sm:flex-row items-center justify-between gap-space-sm mt-space-xs">
+                      <div className="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-[13px]">
+                        <span className="material-symbols-outlined text-[20px] text-primary shrink-0">
+                          history
+                        </span>
+                        <span>
+                          Đang hiển thị {Math.min(3, allOrders.length)} đơn gần nhất trong tổng số <strong>{allOrders.length} đơn hàng</strong> của bạn.
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (onViewAllOrders) onViewAllOrders();
+                          else window.location.hash = "orders";
+                        }}
+                        className="px-space-lg py-space-xs rounded-full bg-primary-container text-on-primary hover:bg-tertiary-container font-label-md text-label-md font-semibold transition-all shadow-sm border-0 cursor-pointer flex items-center gap-1.5 shrink-0"
+                        type="button"
+                      >
+                        <span>Xem toàn bộ lịch sử đơn hàng</span>
+                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      </button>
                     </div>
-                    <button
-                      onClick={() => {
-                        if (onViewAllOrders) onViewAllOrders();
-                        else window.location.hash = "orders";
-                      }}
-                      className="px-space-lg py-space-xs rounded-full bg-primary-container text-on-primary hover:bg-tertiary-container font-label-md text-label-md font-semibold transition-all shadow-sm border-0 cursor-pointer flex items-center gap-1.5 shrink-0"
-                      type="button"
-                    >
-                      <span>Xem toàn bộ lịch sử đơn hàng</span>
-                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                    </button>
-                  </div>
+                  )}
                 </div>
 
                 {/* ACTION FOOTER BAR */}
@@ -3119,8 +2947,12 @@ export default function UserProfile({
                           </span>
                           <span className="font-body-sm text-[11px] text-on-surface-variant">
                             {item.sizeName} {item.sweetness ? `• ${item.sweetness}` : ""} {item.ice ? `• ${item.ice}` : ""}
-                            {item.toppings?.length > 0 ? ` • ${item.toppings.join(", ")}` : ""}
                           </span>
+                          {item.toppings?.length > 0 && (
+                            <span className="font-body-sm text-[11px] text-primary font-medium mt-0.5">
+                              + Topping: {item.toppings.join(", ")}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <span className="font-label-md text-label-md font-bold text-primary shrink-0">

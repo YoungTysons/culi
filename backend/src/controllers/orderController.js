@@ -63,11 +63,21 @@ const createOrder = async (req, res) => {
             sweetness: item.sweetness || "100%",
             ice: item.ice || "100%",
             unitPrice: Number(item.unitPrice) || 0,
+            toppings: item.toppings && item.toppings.length > 0 ? {
+              create: item.toppings.map((tp) => ({
+                toppingId: Number(tp.id) || 1,
+                price: Number(tp.price) || 0,
+              }))
+            } : undefined,
           })),
         },
       },
       include: {
-        items: true,
+        items: {
+          include: {
+            toppings: true, // Phải include toppings để khi trả về có dữ liệu
+          },
+        },
       },
     });
 
@@ -128,6 +138,11 @@ const getMyOrders = async (req, res) => {
         items: {
           include: {
             product: true,
+            toppings: {
+              include: {
+                topping: true,
+              },
+            },
           },
         },
       },
@@ -193,9 +208,116 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+// API: Lấy tất cả đơn hàng (cho Admin)
+const getAllOrders = async (req, res) => {
+  try {
+    const orders = await prisma.order.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phoneNumber: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      orders,
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách đơn hàng admin:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Không thể lấy danh sách đơn hàng",
+    });
+  }
+};
+
+// API: Cập nhật trạng thái đơn hàng (cho Admin)
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = [
+      "PENDING",
+      "PREPARING",
+      "PREPARED",
+      "DELIVERING",
+      "COMPLETED",
+      "CANCELLED",
+    ];
+
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Trạng thái không hợp lệ. Phải là một trong: ${validStatuses.join(", ")}`,
+      });
+    }
+
+    const existingOrder = await prisma.order.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingOrder) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng",
+      });
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: Number(id) },
+      data: { status },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phoneNumber: true,
+            email: true,
+          },
+        },
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Cập nhật trạng thái đơn hàng thành công!",
+      order: updated,
+    });
+  } catch (error) {
+    console.error("Lỗi khi cập nhật trạng thái đơn hàng:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Không thể cập nhật trạng thái đơn hàng",
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   getMyOrders,
   cancelOrder,
+  getAllOrders,
+  updateOrderStatus,
 };
 

@@ -199,17 +199,19 @@ export default function CheckoutModal({
       return cart.map((item) => ({
         id: item.id,
         name: item.name,
-        price: money(amount(item.price || item.basePrice)),
-        unitPrice: amount(item.price || item.basePrice),
+        price: money(item.unitPrice || amount(item.price || item.basePrice)),
+        unitPrice: item.unitPrice || amount(item.price || item.basePrice),
         quantity: item.quantity || 1,
         size: item.size || "Size M",
+        sizePrice: item.sizePrice || 0,
         note:
           item.note ||
           (item.sugar && item.ice ? `${item.sugar} Đường • ${item.ice} Đá` : "Chuẩn vị"),
         topping:
           item.toppings && item.toppings.length > 0
-            ? `+ ${item.toppings.map((t) => t.name || t).join(", ")}`
+            ? `+ ${item.toppings.map((t) => t.name || t.label || t).join(", ")}`
             : null,
+        toppings: item.toppings || [],
         image:
           item.image ||
           "https://lh3.googleusercontent.com/aida-public/AB6AXuAM8V9vfFRo9QXR8W7xxUSYhDRBAPwn1dofJdoNCUlmTmdZZTUGlJppUbKtAOFrSH16ztd1yHvMoWqbEDrjh7mCw4ic8EaS-3GluOXBplAXADUZNvETobdhUpZ-xX2I7dDz5YTvSkf9QkL-NXWDNjXkuIBU43T3S7pprAcN36sEfm9nF9S8RtW6MWSTWiDH3yCvJx0-UIkcBRx_DR2QhtGzlRXYwStZYgG3OBac6lVSSObIHHJ-btF2eA",
@@ -316,9 +318,14 @@ export default function CheckoutModal({
           productId: item.id && !isNaN(item.id) ? Number(item.id) : 1, // Fallback ID sản phẩm
           quantity: item.quantity || 1,
           sizeName: item.size || "Size M",
-          sizePrice: 0,
+          sizePrice: item.sizePrice || 0,
           sweetness: item.note || "Chuẩn vị",
           ice: "Chuẩn đá",
+          toppings: (item.toppings || []).map((t) => ({
+            id: t.id,
+            name: t.name || t.label,
+            price: Number(t.price) || 0,
+          })),
           unitPrice: item.unitPrice || 50000,
         })),
       };
@@ -915,11 +922,10 @@ export default function CheckoutModal({
                                       if (addr.city) setCity(addr.city);
                                       if (addr.note) setDeliveryNotes(addr.note);
                                     }}
-                                    className={`p-2.5 rounded-lg border text-left cursor-pointer transition-all ${
-                                      isSelected
+                                    className={`p-2.5 rounded-lg border text-left cursor-pointer transition-all ${isSelected
                                         ? "bg-primary/5 border-primary shadow-xs ring-1 ring-primary/30"
                                         : "bg-surface-container-lowest border-outline-variant/40 hover:border-primary/50"
-                                    }`}
+                                      }`}
                                   >
                                     <div className="flex items-center justify-between gap-1">
                                       <span className="text-xs font-bold text-primary truncate">
@@ -1000,11 +1006,10 @@ export default function CheckoutModal({
                             )}
                           </label>
                           <input
-                            className={`w-full bg-surface-container-low focus:bg-surface-container-lowest text-on-surface px-space-md py-space-xs rounded-lg font-body-md text-body-md outline-none transition-all shadow-inner border ${
-                              !streetAddress || !streetAddress.trim()
+                            className={`w-full bg-surface-container-low focus:bg-surface-container-lowest text-on-surface px-space-md py-space-xs rounded-lg font-body-md text-body-md outline-none transition-all shadow-inner border ${!streetAddress || !streetAddress.trim()
                                 ? "border-amber-400 focus:border-red-400"
                                 : "border-transparent focus:border-outline-variant"
-                            }`}
+                              }`}
                             id="street-address"
                             placeholder="Vd: 124 Phố Hàng Trống, Tòa nhà Heritage..."
                             type="text"
@@ -1699,11 +1704,11 @@ export default function CheckoutModal({
                   src={
                     payosQrCode
                       ? `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
-                          payosQrCode
-                        )}&size=260x260`
+                        payosQrCode
+                      )}&size=260x260`
                       : `https://img.vietqr.io/image/970422-0366448294-compact2.png?amount=${grandTotal}&addInfo=${encodeURIComponent(
-                          createdOrderCode
-                        )}&accountName=VELVET%20BREW`
+                        createdOrderCode
+                      )}&accountName=VELVET%20BREW`
                   }
                   alt="VietQR Code"
                   className="w-56 h-56 object-contain"

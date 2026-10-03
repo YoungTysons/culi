@@ -65,8 +65,9 @@ model Address {
 enum OrderStatus {
   PENDING     // Chờ xác nhận
   PREPARING   // Đang pha chế
-  DELIVERING  // Đang giao
-  COMPLETED   // Hoàn thành
+  PREPARED    // Đã pha chế xong
+  DELIVERING  // Đã pha chế xong và vận chuyển
+  COMPLETED   // Hoàn tất / Thành công
   CANCELLED   // Đã hủy
 }
 

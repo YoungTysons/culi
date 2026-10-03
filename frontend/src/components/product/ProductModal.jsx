@@ -8,6 +8,11 @@ function Choice({ title, children }) {
     </div>
   );
 }
+const TOPPING_OPTIONS = [
+  { id: 1, name: "Trân châu đen mật mía", price: 5000 },
+  { id: 2, name: "Trân châu hoàng kim dai giòn", price: 7000 },
+  { id: 3, name: "Kem Cheese dẻo", price: 10000 },
+];
 
 export default function ProductModal({
   product,
@@ -84,35 +89,37 @@ export default function ProductModal({
         </Choice>
         <Choice title="4. Thêm topping">
           <div className="toppings">
-            {[
-              ["Trân châu đen mật mía", 5000],
-              ["Trân châu hoàng kim dai giòn", 7000],
-              ["Kem Cheese dẻo", 10000],
-            ].map(([label, price]) => (
-              <label key={label}>
-                <input
-                  type="checkbox"
-                  onChange={(event) =>
-                    setCustom({
-                      ...custom,
-                      toppings: event.target.checked
-                        ? [...custom.toppings, { label, price }]
-                        : custom.toppings.filter(
-                            (item) => item.label !== label,
-                          ),
-                    })
-                  }
-                />
-                {label}
-                <strong>+{money(price)}</strong>
-              </label>
-            ))}
+            {TOPPING_OPTIONS.map((tp) => {
+              const isChecked = custom.toppings?.some(
+                (item) => item.id === tp.id || item.label === tp.name || item.name === tp.name
+              );
+              return (
+                <label key={tp.id}>
+                  <input
+                    type="checkbox"
+                    checked={!!isChecked}
+                    onChange={(event) =>
+                      setCustom({
+                        ...custom,
+                        toppings: event.target.checked
+                          ? [...custom.toppings.filter((it) => it.id !== tp.id && it.name !== tp.name && it.label !== tp.name), tp]
+                          : custom.toppings.filter(
+                              (item) => item.id !== tp.id && item.name !== tp.name && item.label !== tp.name
+                            ),
+                      })
+                    }
+                  />
+                  {tp.name}
+                  <strong>+{money(tp.price)}</strong>
+                </label>
+              );
+            })}
           </div>
         </Choice>
         <button
           className="add-modal"
           onClick={() => {
-            onAddToCart(product);
+            onAddToCart(product, custom);
             onClose();
           }}
         >

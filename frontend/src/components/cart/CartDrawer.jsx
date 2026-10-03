@@ -11,7 +11,7 @@ export default function CartDrawer({
 
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cart.reduce(
-    (sum, item) => sum + amount(item.price) * item.quantity,
+    (sum, item) => sum + (item.unitPrice || amount(item.price)) * item.quantity,
     0,
   );
 
@@ -30,17 +30,23 @@ export default function CartDrawer({
           </p>
         ) : (
           cart.map((item) => (
-            <div className="cart-item" key={item.id}>
+            <div className="cart-item" key={item.cartItemId || item.id}>
               <img src={item.image} alt={item.name} />
               <div>
                 <strong>{item.name}</strong>
-                <span>{item.price}</span>
+                {(item.size || (item.toppings && item.toppings.length > 0)) && (
+                  <small style={{ fontSize: "12px", color: "var(--muted, #888)", display: "block", marginTop: "2px" }}>
+                    {item.size || "Size M"}
+                    {item.toppings && item.toppings.length > 0 && ` • +${item.toppings.map((t) => t.name || t.label).join(", ")}`}
+                  </small>
+                )}
+                <span>{money(item.unitPrice || amount(item.price))}</span>
                 <div className="quantity">
-                  <button onClick={() => onChangeQuantity(item.id, -1)}>
+                  <button onClick={() => onChangeQuantity(item.cartItemId || item.id, -1)}>
                     −
                   </button>
                   {item.quantity}
-                  <button onClick={() => onChangeQuantity(item.id, 1)}>
+                  <button onClick={() => onChangeQuantity(item.cartItemId || item.id, 1)}>
                     +
                   </button>
                 </div>

@@ -3,6 +3,7 @@ import "./App.css";
 
 import { fetchProducts } from "./api/productApi";
 import { mockProducts } from "./constants/mockProducts";
+import { amount, money } from "./utils/format";
 
 import Header from "./components/layout/Header";
 import Notice from "./components/layout/Notice";
@@ -81,30 +82,44 @@ function MainApp() {
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  const addToCart = (product) => {
+  const addToCart = (product, customConfig) => {
     if (!product) return;
-    setCart((current) =>
-      current.some((item) => item.id === product.id)
-        ? current.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
-        )
-        : [...current, { ...product, quantity: 1 }],
-    );
+    const cfg = customConfig || custom;
+    const sizeExtra = Number(cfg.size) || 0;
+    const sizeName = sizeExtra === 12000 ? "Size L" : sizeExtra === 6000 ? "Size M" : "Size S";
+    const toppingTotal = (cfg.toppings || []).reduce((sum, t) => sum + (Number(t.price) || 0), 0);
+    const basePrice = amount(product.price || product.basePrice) || 50000;
+    const finalUnitPrice = basePrice + sizeExtra + toppingTotal;
+    const cartItem = {
+      ...product,
+      cartItemId: `${product.id}-${Date.now()}`, // Mã phân biệt từng ly
+      size: sizeName,
+      sizePrice: sizeExtra,
+      sugar: cfg.sugar || "100%",
+      ice: cfg.ice || "Chuẩn",
+      toppings: cfg.toppings || [], // [{ id: 1, name: "Trân châu...", price: 5000 }]
+      unitPrice: finalUnitPrice,
+      quantity: 1,
+    };
+    setCart((current) => [...current, cartItem]);
     setSelected(null);
     setDrawer(true);
+    setCustom({
+      size: 0,
+      sugar: "70%",
+      ice: "Chuẩn",
+      toppings: [],
+    });
   };
 
   const changeQuantity = (id, change) => {
     setCart((current) =>
-      current.flatMap((item) =>
-        item.id === id && item.quantity + change < 1
-          ? []
-          : item.id === id
-            ? [{ ...item, quantity: item.quantity + change }]
-            : [item],
-      ),
+      current.flatMap((item) => {
+        const isMatch = item.cartItemId === id || item.id === id;
+        if (!isMatch) return [item];
+        if (item.quantity + change < 1) return [];
+        return [{ ...item, quantity: item.quantity + change }];
+      }),
     );
   };
 
@@ -139,7 +154,7 @@ function MainApp() {
   }
 
   // 2. KHI CHƯA ĐĂNG NHẬP: Bắt buộc hiện giao diện Đăng nhập / Đăng ký (Không vào trang chủ)
- 
+
 
   // 3. KHI CHUYỂN SANG GIAO DIỆN ADMIN DASHBOARD
   if (currentView === "admin") {
@@ -165,7 +180,7 @@ function MainApp() {
           />
         </div>
       );
-    }if (user.role !== "ADMIN") {
+    } if (user.role !== "ADMIN") {
       return (
         <div style={{ padding: "4rem", textAlign: "center" }}>
           <h2 style={{ color: "#dc2626" }}>Truy cập bị từ chối (403)</h2>
@@ -390,10 +405,10 @@ function MainApp() {
         onClose={() => setAuthModalOpen(false)}
       />
     </div>
-    
+
   );
- 
-      
+
+
 }
 
 export default function App() {

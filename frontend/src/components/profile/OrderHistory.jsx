@@ -39,6 +39,11 @@ export default function OrderHistory({
   useEffect(() => {
     fetchMyOrders();
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    const interval = setInterval(() => {
+      fetchMyOrders();
+    }, 10000);
+    return () => clearInterval(interval);
   }, [user?.id]);
 
   const formatCurrency = (val) => {
@@ -291,7 +296,9 @@ export default function OrderHistory({
     (o) => o.status === "DELIVERING" || o.status === "PREPARING" || o.status === "PENDING"
   ).length;
 
-  const deliveringCount = allOrders.filter((o) => o.status === "DELIVERING").length;
+  const deliveringCount = allOrders.filter(
+    (o) => o.status === "DELIVERING" || o.status === "PREPARED"
+  ).length;
   const preparingCount = allOrders.filter(
     (o) => o.status === "PREPARING" || o.status === "PENDING"
   ).length;
@@ -299,14 +306,14 @@ export default function OrderHistory({
   const cancelledCount = allOrders.filter((o) => o.status === "CANCELLED").length;
 
   const totalSpent = allOrders
-    .filter((o) => o.status === "COMPLETED" || o.status === "DELIVERING" || o.status === "PREPARING")
+    .filter((o) => o.status === "COMPLETED" || o.status === "DELIVERING" || o.status === "PREPARING" || o.status === "PREPARED")
     .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
   const totalBrewPoints = allOrders.reduce((sum, o) => sum + (o.brewPoints || 0), 0);
 
   // Lọc
   const filteredOrders = allOrders.filter((order) => {
-    if (orderFilterStatus === "DELIVERING" && order.status !== "DELIVERING") return false;
+    if (orderFilterStatus === "DELIVERING" && order.status !== "DELIVERING" && order.status !== "PREPARED") return false;
     if (
       orderFilterStatus === "PREPARING" &&
       order.status !== "PREPARING" &&
@@ -672,7 +679,7 @@ export default function OrderHistory({
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
                 </span>
-                <span>Đang giao hàng</span>
+                <span>Đã pha chế & Vận chuyển</span>
                 <span className="bg-secondary/15 text-secondary px-2 py-0.5 rounded-full text-label-sm font-label-sm font-bold">
                   {deliveringCount}
                 </span>
@@ -833,6 +840,7 @@ export default function OrderHistory({
             ) : (
               paginatedOrders.map((order) => {
                 const isDelivering = order.status === "DELIVERING";
+                const isPrepared = order.status === "PREPARED";
                 const isPreparing = order.status === "PREPARING";
                 const isPending = order.status === "PENDING";
                 const isCompleted = order.status === "COMPLETED";
@@ -870,7 +878,20 @@ export default function OrderHistory({
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
                               <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
                             </span>
-                            <span>Đang giao hàng • Tài xế cách bạn ~1.2km</span>
+                            <span className="material-symbols-outlined text-[16px]">local_shipping</span>
+                            <span>
+                              {order.deliveryType === "TAKEAWAY"
+                                ? "Đã pha chế xong • Sẵn sàng lấy tại quầy"
+                                : "Đã pha chế xong và vận chuyển"}
+                            </span>
+                          </span>
+                        )}
+                        {isPrepared && (
+                          <span className="inline-flex items-center gap-1.5 bg-secondary-container text-on-secondary-fixed-variant px-space-md py-space-2xs rounded-full font-label-md text-label-md font-semibold shadow-sm">
+                            <span className="material-symbols-outlined text-secondary text-[16px]">
+                              check_circle
+                            </span>
+                            <span>Đã pha chế xong</span>
                           </span>
                         )}
                         {isPreparing && (
@@ -904,90 +925,6 @@ export default function OrderHistory({
                       </div>
                     </div>
 
-                    {/* Live Stepper Tracker for active orders */}
-                    {(isDelivering || isPreparing || isPending) && (
-                      <div className="py-space-md mb-space-lg bg-surface-container-low/60 rounded-xl px-space-md md:px-space-xl">
-                        <div className="flex items-center justify-between relative">
-                          <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-surface-container-highest z-0"></div>
-                          <div
-                            className="absolute left-6 top-1/2 -translate-y-1/2 h-1 bg-secondary z-0 transition-all duration-500"
-                            style={{
-                              width: isPending ? "15%" : isPreparing ? "50%" : "80%",
-                            }}
-                          ></div>
-
-                          {/* Step 1 */}
-                          <div className="relative z-10 flex flex-col items-center">
-                            <div className="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-sm">
-                              <span className="material-symbols-outlined text-[20px]">receipt</span>
-                            </div>
-                            <span className="font-label-sm text-label-sm text-primary mt-2 font-semibold">
-                              Đã nhận đơn
-                            </span>
-                            <span className="font-body-sm text-body-sm text-on-surface-variant">
-                              09:30
-                            </span>
-                          </div>
-
-                          {/* Step 2 */}
-                          <div className="relative z-10 flex flex-col items-center">
-                            <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm ${
-                                isPreparing || isDelivering ? "bg-secondary text-on-secondary" : "bg-surface-container text-outline"
-                              }`}
-                            >
-                              <span className="material-symbols-outlined text-[20px]">blender</span>
-                            </div>
-                            <span
-                              className={`font-label-sm text-label-sm mt-2 font-semibold ${
-                                isPreparing || isDelivering ? "text-primary" : "text-outline"
-                              }`}
-                            >
-                              Đã pha chế
-                            </span>
-                            <span className="font-body-sm text-body-sm text-on-surface-variant">
-                              09:42
-                            </span>
-                          </div>
-
-                          {/* Step 3 (Active) */}
-                          <div className="relative z-10 flex flex-col items-center">
-                            <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
-                                isDelivering
-                                  ? "bg-secondary text-on-secondary ring-4 ring-secondary-container"
-                                  : "bg-surface-container text-outline"
-                              }`}
-                            >
-                              <span className="material-symbols-outlined text-[20px]">
-                                two_wheeler
-                              </span>
-                            </div>
-                            <span
-                              className={`font-label-sm text-label-sm font-bold mt-2 ${
-                                isDelivering ? "text-secondary" : "text-outline"
-                              }`}
-                            >
-                              Đang giao hàng
-                            </span>
-                            <span className="font-body-sm text-body-sm text-secondary font-medium">
-                              09:47
-                            </span>
-                          </div>
-
-                          {/* Step 4 */}
-                          <div className="relative z-10 flex flex-col items-center">
-                            <div className="w-10 h-10 rounded-full bg-surface-container text-outline flex items-center justify-center shadow-sm">
-                              <span className="material-symbols-outlined text-[20px]">done_all</span>
-                            </div>
-                            <span className="font-label-sm text-label-sm text-outline mt-2">
-                              Hoàn tất
-                            </span>
-                            <span className="font-body-sm text-body-sm text-outline"></span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
 
                     {/* Order Content Split Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg mb-space-lg">
@@ -1030,7 +967,7 @@ export default function OrderHistory({
                                       key={tIdx}
                                       className="bg-surface-container text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded-full"
                                     >
-                                      + {top}
+                                      + {top.topping?.name || top.name || (typeof top === "string" ? top : "Topping")}
                                     </span>
                                   ))}
                                 </div>
@@ -1432,11 +1369,13 @@ export default function OrderHistory({
                     </h3>
                     <span className="font-label-sm text-[11px] px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-semibold">
                       {selectedOrderForDetail.status === "DELIVERING"
-                        ? "Đang giao hàng"
+                        ? (selectedOrderForDetail.deliveryType === "TAKEAWAY" ? "Đã pha chế xong • Sẵn sàng lấy tại quầy" : "Đã pha chế xong và vận chuyển")
+                        : selectedOrderForDetail.status === "PREPARED"
+                        ? "Đã pha chế xong"
                         : selectedOrderForDetail.status === "PREPARING"
-                        ? "Đang pha chế"
+                        ? "Barista đang pha chế"
                         : selectedOrderForDetail.status === "COMPLETED"
-                        ? "Đã hoàn tất"
+                        ? "Thành công"
                         : selectedOrderForDetail.status === "CANCELLED"
                         ? "Đã hủy"
                         : "Chờ tiếp nhận"}
@@ -1501,6 +1440,11 @@ export default function OrderHistory({
                         <span className="font-body-sm text-[11px] text-on-surface-variant">
                           {item.sizeName} {item.sweetness ? `• ${item.sweetness}` : ""} {item.ice ? `• ${item.ice}` : ""}
                         </span>
+                        {item.toppings?.length > 0 && (
+                          <span className="font-body-sm text-[11px] text-primary font-medium">
+                            + {item.toppings.map((t) => t.topping?.name || t.name || (typeof t === "string" ? t : "Topping")).join(", ")}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <span className="font-label-md text-label-md font-bold text-primary shrink-0">

@@ -1,6 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const { createOrder, getMyOrders, cancelOrder } = require("../controllers/orderController");
+const {
+  createOrder,
+  getMyOrders,
+  cancelOrder,
+  getAllOrders,
+  updateOrderStatus,
+} = require("../controllers/orderController");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET || "super_secret_jwt_key_2026";
 
@@ -22,8 +28,14 @@ const flexibleAuth = (req, res, next) => {
 // Endpoint: POST /api/orders (tạo đơn)
 router.post("/", createOrder);
 
+// Endpoint: GET /api/orders (lấy tất cả đơn hàng cho Admin)
+router.get("/", flexibleAuth, getAllOrders);
+
 // Endpoint: GET /api/orders/my-orders (lấy danh sách đơn hàng của người dùng)
 router.get("/my-orders", flexibleAuth, getMyOrders);
+
+// Endpoint: PUT /api/orders/:id/status (cập nhật trạng thái đơn hàng cho Admin)
+router.put("/:id/status", flexibleAuth, updateOrderStatus);
 
 // Endpoint: PUT /api/orders/:id/cancel (hủy đơn hàng)
 router.put("/:id/cancel", flexibleAuth, cancelOrder);
